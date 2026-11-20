@@ -65,17 +65,41 @@ let calendarCursor=new Date();calendarCursor.setDate(1);
 let selectedCalendarDay='';
 function localDayKey(d){const p=n=>String(n).padStart(2,'0');return d.getFullYear()+'-'+p(d.getMonth()+1)+'-'+p(d.getDate())}
 function renderCalendar(){
+ const view=document.getElementById('calendarView')?.value||'month';
  const year=calendarCursor.getFullYear(),month=calendarCursor.getMonth();
- document.getElementById('calendarMonth').textContent=calendarCursor.toLocaleDateString('pt-BR',{month:'long',year:'numeric'});
- const first=new Date(year,month,1).getDay(),count=new Date(year,month+1,0).getDate(),today=localDayKey(new Date());
- let cells=Array(first).fill('<div class="cal-blank" aria-hidden="true"></div>');
- for(let day=1;day<=count;day++){
-  const date=new Date(year,month,day),key=localDayKey(date),shifts=db.shifts.filter(s=>s.start.slice(0,10)===key);
+ const monthLabel=document.getElementById('calendarMonth');
+ const grid=document.getElementById('calendarGrid');
+ const today=localDayKey(new Date());
+ const dayButton=date=>{
+  const key=localDayKey(date),shifts=db.shifts.filter(s=>s.start.slice(0,10)===key);
   const hours=shifts.reduce((sum,s)=>sum+calc(s).hours,0);
   const classes=['cal-day',shifts.length?'has-shifts':'',key===today?'today':'',key===selectedCalendarDay?'selected':''].filter(Boolean).join(' ');
-  cells.push(`<button type="button" class="${classes}" data-calendar-day="${key}" aria-label="${day} de ${date.toLocaleDateString('pt-BR',{month:'long'})}, ${shifts.length} plantões"><strong>${day}</strong><span class="cal-count">${shifts.length?shifts.length+' plantão(s) · '+hours.toLocaleString('pt-BR',{maximumFractionDigits:1})+' h':''}</span></button>`);
+  return '<button type="button" class="'+classes+'" data-calendar-day="'+key+'" aria-label="'+date.getDate()+' de '+date.toLocaleDateString('pt-BR',{month:'long'})+', '+shifts.length+' plantões"><strong>'+date.getDate()+'</strong><span class="cal-count">'+(shifts.length?shifts.length+' plantão(s) · '+hours.toLocaleString('pt-BR',{maximumFractionDigits:1})+' h':'')+'</span></button>';
+ };
+ if(view==='year'){
+  monthLabel.textContent=String(year);
+  const months=Array.from({length:12},(_,i)=>{
+   const key=year+'-'+String(i+1).padStart(2,'0'),items=db.shifts.filter(s=>s.start.slice(0,7)===key);
+   const hours=items.reduce((sum,s)=>sum+calc(s).hours,0),amount=items.reduce((sum,s)=>sum+calc(s).total,0);
+   return '<button type="button" class="year-month" data-calendar-month="'+i+'"><strong>'+new Date(year,i,1).toLocaleDateString('pt-BR',{month:'long'})+'</strong><span>'+items.length+' plantão(ões) · '+hours.toLocaleString('pt-BR',{maximumFractionDigits:1})+' h</span><span>'+money(amount)+'</span></button>';
+  });
+  grid.className='year-grid';grid.innerHTML=months.join('');
+ }else{
+  grid.className='calendar-grid';
+  if(view==='week'){
+   const base=selectedCalendarDay?new Date(selectedCalendarDay+'T12:00:00'):new Date(calendarCursor);
+   const first=new Date(base);first.setDate(base.getDate()-base.getDay());
+   const last=new Date(first);last.setDate(first.getDate()+6);
+   monthLabel.textContent=first.toLocaleDateString('pt-BR',{day:'2-digit',month:'short'})+' – '+last.toLocaleDateString('pt-BR',{day:'2-digit',month:'short',year:'numeric'});
+   grid.innerHTML=Array.from({length:7},(_,i)=>{const d=new Date(first);d.setDate(first.getDate()+i);return dayButton(d)}).join('');
+  }else{
+   monthLabel.textContent=calendarCursor.toLocaleDateString('pt-BR',{month:'long',year:'numeric'});
+   const first=new Date(year,month,1),count=new Date(year,month+1,0).getDate();
+   const cells=Array(first.getDay()).fill('<div class="cal-blank" aria-hidden="true"></div>');
+   for(let day=1;day<=count;day++)cells.push(dayButton(new Date(year,month,day)));
+   grid.innerHTML=cells.join('');
+  }
  }
- document.getElementById('calendarGrid').innerHTML=cells.join('');
  const details=document.getElementById('calendarDayDetails');
  if(!selectedCalendarDay){details.textContent='Selecione um dia para ver os plantões.';return}
  const shifts=db.shifts.filter(s=>s.start.slice(0,10)===selectedCalendarDay);
@@ -196,11 +220,11 @@ document.getElementById('importCalendar').onclick=async()=>{
   db.shifts.push(...pending);save();calStatus(`${added} evento(s) importado(s); ${skipped} ignorado(s). ${pages} página(s) consultada(s). ${pageToken?'Limite de 100 páginas atingido; repita a importação para continuar. ':''}Eventos sem horário ou sem nome de hospital correspondente não foram importados.`);
  }catch(e){calStatus(e.message)}
 };
-document.getElementById('calendarPrev').onclick=()=>{calendarCursor.setMonth(calendarCursor.getMonth()-1);selectedCalendarDay='';renderCalendar()};
-document.getElementById('calendarNext').onclick=()=>{calendarCursor.setMonth(calendarCursor.getMonth()+1);selectedCalendarDay='';renderCalendar()};
+document.getElementById('calendarView').onchange=()=>renderCalendar();\ndocument.getElementById('calendarPrev').onclick=()=>{const v=document.getElementById('calendarView').value;if(v==='week')calendarCursor.setDate(calendarCursor.getDate()-7);else if(v==='year')calendarCursor.setFullYear(calendarCursor.getFullYear()-1);else calendarCursor.setMonth(calendarCursor.getMonth()-1);selectedCalendarDay='';renderCalendar()};
+document.getElementById('calendarNext').onclick=()=>{const v=document.getElementById('calendarView').value;if(v==='week')calendarCursor.setDate(calendarCursor.getDate()+7);else if(v==='year')calendarCursor.setFullYear(calendarCursor.getFullYear()+1);else calendarCursor.setMonth(calendarCursor.getMonth()+1);selectedCalendarDay='';renderCalendar()};
 document.addEventListener('click',event=>{
  const dayButton=event.target.closest('[data-calendar-day]');
- if(dayButton){selectedCalendarDay=dayButton.dataset.calendarDay;renderCalendar();return}
+ if(dayButton){selectedCalendarDay=dayButton.dataset.calendarDay;calendarCursor=new Date(selectedCalendarDay+'T12:00:00');renderCalendar();return}\n const monthButton=event.target.closest('[data-calendar-month]');if(monthButton){calendarCursor=new Date(calendarCursor.getFullYear(),Number(monthButton.dataset.calendarMonth),1);document.getElementById('calendarView').value='month';selectedCalendarDay='';renderCalendar();return}
  const button=event.target.closest('[data-action]');if(!button)return;
  const targetId=button.dataset.id;
  switch(button.dataset.action){
