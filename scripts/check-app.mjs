@@ -17,6 +17,8 @@ assert.doesNotMatch(html, /<script(?![^>]*\bsrc=)[^>]*>[\s\S]*?<\/script>/i, 'In
 assert.match(html, /calendarGrid/, 'The monthly calendar must be present');
 assert.match(app, /calendarPrev/, 'The calendar must support month navigation');
 assert.match(app, /calendarDayDetails/, 'The calendar must show daily details');
+assert.match(app, /Notification\.requestPermission/, 'Shift alerts must request browser permission explicitly');
+assert.match(app, /setInterval\(checkUpcomingShiftAlerts/, 'Shift alerts must periodically recheck while the app is open');
 assert.match(app, /calendar\.events\.readonly/, 'Calendar access must remain read-only');
 assert.match(app, /nextPageToken/, 'Calendar import must handle pagination');
 assert.match(app, /normalizeDB/, 'Backups must be validated before use');
