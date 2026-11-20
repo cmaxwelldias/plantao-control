@@ -138,6 +138,20 @@ footer{color:var(--muted);font-size:12px;margin-top:18px}
  <div class="card" style="margin-top:14px"><h2>Instituições cadastradas</h2><div id="hospitalTable"></div></div>
 </section>
 <section id="dados" class="section">
+ <div class="card" style="margin-bottom:14px">
+  <h2>Sincronização gratuita na nuvem</h2>
+  <p class="note">Crie uma conta gratuita para manter hospitais e plantões sincronizados entre seus dispositivos. Use seu próprio e-mail e uma senha com pelo menos 8 caracteres. A senha não é salva pelo aplicativo; a sessão segura é mantida neste dispositivo.</p>
+  <div id="cloudLogin">
+   <div class="row">
+    <label>E-mail<input id="cloudEmail" type="email" autocomplete="email" placeholder="seu@email.com"></label>
+    <label>Senha<input id="cloudPassword" type="password" autocomplete="current-password" minlength="8" placeholder="Mínimo de 8 caracteres"></label>
+   </div>
+   <div class="actions" style="margin-top:10px"><button class="btn primary" id="cloudSignIn" type="button">Entrar e sincronizar</button><button class="btn" id="cloudSignUp" type="button">Criar conta gratuita</button></div>
+  </div>
+  <div id="cloudLogout" hidden><p id="cloudUser" class="note"></p><button class="btn" id="cloudSignOut" type="button">Sair desta conta</button></div>
+  <p id="cloudStatus" class="note" aria-live="polite">Não conectado. Os dados permanecem salvos localmente até você entrar.</p>
+  <p class="note">A nuvem usa autenticação e políticas de acesso por usuário. A chave pública do aplicativo não permite acessar os dados de outra conta. Não armazene informações clínicas ou dados de pacientes.</p>
+ </div>
  <div class="two">
   <div class="card"><h2>Backup dos seus dados</h2><p class="note">Exporte um arquivo de backup para guardar seus hospitais e plantões. Importe-o em outro dispositivo para transferir os dados.</p><div class="actions"><button class="btn primary" id="exportBtn">Exportar backup</button><label class="btn" style="display:inline-flex;align-items:center">Importar backup<input id="importFile" type="file" accept="application/json" hidden></label></div></div>
   <div class="card"><h2>Google Agenda</h2>
