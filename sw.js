@@ -1,4 +1,4 @@
-const CACHE='plantonices-v10';
+const CACHE='plantonices-v11';
 const FILES=['./','./index.html','./app.js','./extras.js','./manifest.webmanifest','./icon-192.png','./icon-512.png'];
 
 self.addEventListener('install',event=>{
