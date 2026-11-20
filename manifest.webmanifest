@@ -1,7 +1,7 @@
 {
-  "name": "Plantão Control",
-  "short_name": "Plantão",
-  "description": "Organize plantões, horas e recebimentos.",
+  "name": "Plantonices — Gerenciador de Plantões",
+  "short_name": "Plantonices",
+  "description": "Gerencie plantões, hospitais, horas trabalhadas e recebimentos. Criado por Maxwell Dias.",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
