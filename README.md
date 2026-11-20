@@ -7,16 +7,24 @@
 - Registro de plantões que atravessam a meia-noite.
 - Intervalo remunerado (não descontado).
 - Painel de horas, valores previstos e recebidos.
+- Calendário mensal visual com resumo diário dos plantões.
+- Lembretes locais para plantões nas próximas 24 horas, com permissão explícita do navegador.
 - Backup JSON para transferir dados.
 - PWA instalável e cache offline.
 - Importação de eventos do Google Agenda por OAuth, em modo somente leitura.
+- Política de segurança de conteúdo (CSP), JavaScript externo e cache offline atualizado.
+- Validação de backups e cópia de recuperação para dados locais inválidos.
+- Testes automatizados de sintaxe, segurança e fluxos principais no Chromium.
+- Política de segurança de conteúdo (CSP), scripts externos e cache offline atualizado.
+- Validação automatizada da sintaxe e de invariantes de segurança no GitHub Actions.
 
 ## Limitações importantes
-1. Os dados do aplicativo ficam no armazenamento local de cada navegador/dispositivo. Não existe sincronização automática dos registros do app entre computador e celular nesta versão. Use Exportar/Importar backup para transferir os dados.
-2. A importação do Google Agenda importa eventos com horário definido cujo título contenha o nome cadastrado do hospital. Eventos de dia inteiro e eventos sem correspondência são ignorados. A importação não altera nem apaga eventos no Google.
+1. Os dados do aplicativo ficam no armazenamento local de cada navegador/dispositivo. Os lembretes locais são verificados enquanto o app está aberto; não são notificações push garantidas quando o navegador está fechado. Não existe sincronização automática dos registros do app entre computador e celular nesta versão. Use Exportar/Importar backup para transferir os dados.
+2. A importação do Google Agenda importa eventos com horário definido cujo título contenha o nome cadastrado do hospital. Eventos de dia inteiro e eventos sem correspondência são ignorados. A importação não altera nem apaga eventos no Google. A busca percorre páginas da API (até 100 páginas por operação) e evita reimportar eventos pelo ID do Google.
 3. A conexão Google requer um OAuth Client ID criado pelo proprietário da conta Google e a URL HTTPS de publicação. O ID é público; não coloque senhas ou client secrets no HTML.
 4. O cálculo usa horas reais e não aplica automaticamente hora noturna reduzida, regras trabalhistas, convenções coletivas, adicionais de horas extras ou arredondamentos. Configure os valores conforme contrato/folha de cada instituição.
-5. Para segurança, o token Google é mantido apenas na memória da sessão e deve ser autorizado novamente quando a página for reaberta.
+5. Para segurança, o token Google é mantido apenas na memória da sessão e deve ser autorizado novamente quando a página for reaberta. O botão Desconectar tenta revogar o token no Google; se não for possível, remova o acesso nas permissões da sua Conta Google.
+6. Os dados dos plantões continuam no armazenamento local do navegador. A validação do backup impede estruturas inválidas; se os dados locais estiverem corrompidos, o app tenta preservar uma cópia de recuperação antes de abrir uma base vazia.
 
 ## Publicação gratuita sugerida: GitHub Pages
 1. Crie uma conta gratuita em https://github.com/.
@@ -45,3 +53,7 @@ A API Google Calendar informa que o uso padrão não tem custo adicional, sujeit
 
 ## Privacidade e backup
 Os dados ficam no navegador. Exporte backup regularmente e mantenha uma cópia segura. Não use computador compartilhado sem proteger o perfil do navegador.
+
+## Preparação para sincronização em nuvem
+
+O arquivo `supabase/schema.sql` documenta a estrutura mínima para armazenar um documento JSON por usuário autenticado, com RLS e políticas de propriedade por `auth.uid()`. Ele é apenas um blueprint: ainda não existe um projeto Supabase provisionado nem login/sincronização ativos neste repositório. Nunca coloque a chave `service_role` ou uma chave secreta no navegador; o frontend deverá usar somente uma chave publicável, sempre combinada com Auth e RLS. A tabela também precisa estar habilitada para a Data API nas configurações do projeto, conforme a política de exposição atual do Supabase.
