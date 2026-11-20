@@ -33,7 +33,7 @@ assert.match(app, /nextPageToken/, 'Calendar import must handle pagination');
 assert.match(app, /normalizeDB/, 'Backups must be validated before use');
 assert.match(app, /google\.accounts\.oauth2\.revoke/, 'Disconnect must attempt OAuth revocation');
 assert.doesNotMatch(app, /localStorage\.setItem\([^,]*(?:access.?token|refresh.?token)/i, 'Google OAuth tokens must not be persisted');
-assert.match(sw, /plantonices-v14/, 'The PWA cache must be versioned');
+assert.match(sw, /plantonices-v15/, 'The PWA cache must be versioned');
 assert.match(sw, /cloud-sync\.js/, 'The cloud client must be cached for offline app startup');
 assert.match(sw, /app\.js/, 'The app bundle must be cached for offline use');
 assert.match(sw, /startsWith\('plantao-control-'\)/, 'Cache cleanup must not delete caches belonging to other apps on the same origin');
