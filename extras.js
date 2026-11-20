@@ -97,7 +97,7 @@
   const duration=(a,b)=>{if(!a||!b)return 0;let [ah,am]=a.split(':').map(Number),[bh,bm]=b.split(':').map(Number);let n=bh*60+bm-ah*60-am;if(n<=0)n+=1440;return n/60};
   $('#toolShiftCalc').addEventListener('click',()=>{
     const hours=duration($('#toolStart').value,$('#toolEnd').value),rate=Number($('#toolRate').value),count=Number($('#toolCount').value),fixed=Number($('#toolFixed').value),deduct=Number($('#toolDeduct').value);
-    if(!Number.isFinite(rate)||rate<0||!Number.isInteger(count)||count<1||count>1000||!Number.isFinite(deduct)||deduct<0||deduct>100){$('#toolCalcResult').textContent='Confira os valores informados.';return}
+    if(!Number.isFinite(rate)||rate<0||!Number.isFinite(fixed)||fixed<0||!Number.isInteger(count)||count<1||count>1000||!Number.isFinite(deduct)||deduct<0||deduct>100){$('#toolCalcResult').textContent='Confira os valores informados.';return}
     const gross=(fixed>0?fixed:hours*rate)*count,net=gross*(1-deduct/100);
     $('#toolCalcResult').innerHTML='Horas por plantão: <b>'+hours.toFixed(2)+' h</b><br>Horas totais: <b>'+(hours*count).toFixed(2)+' h</b><br>Bruto: <b>'+money(gross)+'</b><br>Deduções: <b>'+money(gross-net)+'</b><br>Líquido estimado: <b class="total">'+money(net)+'</b>';
   });
@@ -128,7 +128,7 @@
 
   const DB_NAME='plantonices-assets',STORE='assets';let assetDb;
   const openDb=()=>new Promise((resolve,reject)=>{const req=indexedDB.open(DB_NAME,1);req.onupgradeneeded=()=>req.result.createObjectStore(STORE,{keyPath:'id',autoIncrement:true});req.onsuccess=()=>resolve(req.result);req.onerror=()=>reject(req.error)});
-  const dbReady=openDb().then(db=>{assetDb=db;return refreshAssets()}).catch(()=>{$('#assetList').textContent='O armazenamento de arquivos não está disponível neste navegador.'});
+  const dbReady=openDb().then(db=>{assetDb=db;return refreshAssets()}).catch(()=>{$('#assetList').textContent='O armazenamento de arquivos não está disponível neste navegador.';$('#assetInput').disabled=true;$('#recordAudio').disabled=true});
   const txStore=(mode,fn)=>new Promise((resolve,reject)=>{const tx=assetDb.transaction(STORE,mode),store=tx.objectStore(STORE);let req;try{req=fn(store)}catch(e){reject(e);return}tx.oncomplete=()=>resolve(req?.result);tx.onerror=()=>reject(tx.error)});
   async function refreshAssets(){
     if(!assetDb)return;const list=await txStore('readonly',s=>s.getAll());
@@ -137,7 +137,7 @@
   }
   const escapeHtml=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   $('#assetInput').addEventListener('change',async e=>{
-    await dbReady;const files=[...e.target.files];e.target.value='';
+    await dbReady;if(!assetDb){$('#recordStatus').textContent='O armazenamento de arquivos não está disponível.';return}const files=[...e.target.files];e.target.value='';
     for(const f of files){if(f.size>50*1024*1024){alert(f.name+' excede o limite de 50 MB.');continue}try{await txStore('readwrite',s=>s.add({name:f.name,type:f.type,size:f.size,blob:f,createdAt:Date.now()}))}catch{alert('Não foi possível guardar '+f.name+'. Verifique o espaço disponível.')}}
     await refreshAssets();
   });
@@ -148,6 +148,7 @@
   });
   let recorder=null,recordStream=null,chunks=[];
   $('#recordAudio').onclick=async()=>{
+    await dbReady;if(!assetDb){$('#recordStatus').textContent='O armazenamento de arquivos não está disponível.';return}
     if(recorder?.state==='recording'){recorder.stop();$('#recordStatus').textContent='Finalizando gravação…';return}
     try{
       if(!navigator.mediaDevices?.getUserMedia||!window.MediaRecorder)throw Error('Gravação não suportada. Use o seletor de arquivos para anexar um áudio.');
