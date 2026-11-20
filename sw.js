@@ -1,5 +1,5 @@
-const CACHE='plantonices-v8';
-const FILES=['./','./index.html','./app.js','./manifest.webmanifest','./icon-192.png','./icon-512.png'];
+const CACHE='plantonices-v9';
+const FILES=['./','./index.html','./app.js','./extras.js','./manifest.webmanifest','./icon-192.png','./icon-512.png'];
 
 self.addEventListener('install',event=>{
  event.waitUntil(caches.open(CACHE).then(cache=>cache.addAll(FILES)));
