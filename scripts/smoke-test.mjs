@@ -31,11 +31,16 @@ try {
     } } };
   });
   const page = await context.newPage();
+  page.setDefaultTimeout(15000);
+  page.setDefaultNavigationTimeout(15000);
+  page.on('console', message => console.log('[browser]', message.type(), message.text()));
+  page.on('pageerror', error => console.error('[browser page error]', error));
   const dialogs = [];
   page.on('dialog', async dialog => { dialogs.push(dialog.message()); await dialog.accept(); });
   await page.goto(`http://127.0.0.1:${address.port}/`);
   await page.locator('[data-tab="plantoes"]').click();
   await page.waitForSelector('#shiftForm');
+  console.log('Smoke test: application loaded and shifts tab opened.');
 
   await page.locator('#shiftHospital').selectOption({ index: 0 });
   await page.locator('#start').fill('2026-11-23T20:00');
@@ -45,6 +50,7 @@ try {
   assert.equal(await page.locator('#mQtd').innerText(), '1');
   assert.match(await page.locator('#mHoras').innerText(), /10/);
   assert.match(await page.locator('#mPago').innerText(), /310/);
+  console.log('Smoke test: manual shift totals passed.');
 
   await page.route(/https:\/\/www\.googleapis\.com\/calendar\/v3\/calendars\/primary\/events/, async route => {
     const url = new URL(route.request().url());
@@ -71,7 +77,8 @@ try {
   await page.locator('#calFrom').fill('2026-11-23');
   await page.locator('#calTo').fill('2026-11-24');
   await page.locator('#importCalendar').click();
-  await page.waitForFunction(() => document.querySelector('#calendarStatus').textContent.includes('2 evento(s) importado(s)'));
+  await page.waitForFunction(() => document.querySelector('#calendarStatus').textContent.includes('2 evento(s) importado(s)'), null, { timeout: 15000 });
+  console.log('Smoke test: Google Calendar pagination passed.');
   assert.equal(await page.locator('#mQtd').innerText(), '3', 'Both Calendar pages should import without losing the manual shift');
   assert.match(await page.locator('#mHoras').innerText(), /19/);
   const saved = await page.evaluate(() => localStorage.getItem('plantao-control-v1'));
@@ -80,6 +87,7 @@ try {
   await page.locator('#disconnectGoogle').click();
   assert.match(await page.locator('#calendarStatus').innerText(), /revogado/i);
   assert.equal(await page.evaluate(() => window.__revoked), true);
+  console.log('Smoke test: OAuth revocation passed.');
 
   await page.locator('[data-tab="hospitais"]').click();
   await page.locator('#hospitalName').fill('<img src=x onerror=alert(1)>');
@@ -87,11 +95,21 @@ try {
   await page.locator('#hospitalForm button[type="submit"]').click();
   assert.equal(await page.locator('#hospitalTable img').count(), 0, 'Hospital names must be rendered as text, not HTML');
   assert.equal(dialogs.length, 0, 'Untrusted names must not execute script');
+  console.log('Smoke test: HTML escaping passed.');
 
-  await page.evaluate(async () => { await navigator.serviceWorker.ready; });
+  await page.evaluate(async () => {
+    const registration = await navigator.serviceWorker.getRegistration();
+    if (!registration) throw new Error('Service worker registration was not created.');
+    await Promise.race([
+      navigator.serviceWorker.ready,
+      new Promise((_, reject) => setTimeout(() => reject(new Error('Service worker readiness timed out.')), 10000))
+    ]);
+  });
+  console.log('Smoke test: service worker is ready.');
   await context.setOffline(true);
   await page.reload();
   assert.equal(await page.locator('#mQtd').innerText(), '3', 'The PWA should reopen offline with saved shifts');
+  console.log('Smoke test: offline reload passed.');
   console.log('Browser smoke tests passed: shift totals, Calendar pagination, OAuth revocation, HTML escaping, and offline reload.');
 } finally {
   await browser.close();
