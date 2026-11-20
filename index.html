@@ -33,7 +33,7 @@ input,select{width:100%;padding:11px;border:1px solid #ccd6e1;border-radius:9px;
 .cal-day.today{box-shadow:inset 0 0 0 1px var(--blue)}
 .cal-day.has-shifts:after{content:"";width:6px;height:6px;border-radius:50%;background:var(--green);margin-top:auto}
 .cal-day .cal-count{font-size:11px;color:var(--muted)}
-.cal-blank{min-height:66px}
+.cal-blank{min-height:66px}\n.year-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}.year-month{min-height:86px;border:1px solid var(--line);border-radius:10px;background:#fff;padding:10px;text-align:left;color:var(--text)}.year-month strong{display:block}.year-month span{display:block;color:var(--muted);font-size:12px;margin-top:5px}@media(max-width:480px){.year-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:480px){.cal-day{min-height:54px;padding:5px;font-size:13px}.cal-day .cal-count{font-size:9px}.calendar-grid{gap:3px}}
 table{width:100%;border-collapse:collapse;font-size:14px}th,td{text-align:left;padding:10px 7px;border-bottom:1px solid var(--line)}th{color:var(--muted);font-weight:600}
 .actions{display:flex;gap:6px;flex-wrap:wrap}.small{padding:7px 10px;font-size:12px}
@@ -101,7 +101,7 @@ footer{color:var(--muted);font-size:12px;margin-top:18px}
  <div class="card" style="margin-top:14px">
   <div class="toolbar">
    <h2>Calendário de plantões</h2>
-   <div class="actions"><button class="btn small" id="calendarPrev" type="button" aria-label="Mês anterior">‹</button><strong id="calendarMonth" aria-live="polite"></strong><button class="btn small" id="calendarNext" type="button" aria-label="Próximo mês">›</button></div>
+   <div class="actions"><select id="calendarView" aria-label="Visualização do calendário" style="width:auto"><option value="month">Mensal</option><option value="week">Semanal</option><option value="year">Anual</option></select><button class="btn small" id="calendarPrev" type="button" aria-label="Mês anterior">‹</button><strong id="calendarMonth" aria-live="polite"></strong><button class="btn small" id="calendarNext" type="button" aria-label="Próximo mês">›</button></div>
   </div>
   <div class="calendar-grid calendar-weekdays" aria-hidden="true"><span>Dom</span><span>Seg</span><span>Ter</span><span>Qua</span><span>Qui</span><span>Sex</span><span>Sáb</span></div>
   <div id="calendarGrid" class="calendar-grid" aria-label="Calendário mensal"></div>
