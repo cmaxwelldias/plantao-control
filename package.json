@@ -5,10 +5,18 @@
   "description": "Plantonices — gerenciador multiplataforma de plantões",
   "scripts": {
     "test": "playwright test",
-    "test:headed": "playwright test --headed"
+    "test:headed": "playwright test --headed",
+    "mobile:prepare": "node scripts/prepare-mobile.mjs",
+    "mobile:configure": "node scripts/configure-native.mjs"
   },
   "devDependencies": {
+    "@capacitor/cli": "8.6.2",
+    "@capacitor/android": "8.6.2",
+    "@capacitor/ios": "8.6.2",
     "@playwright/test": "1.56.1"
   },
-  "type": "module"
+  "type": "module",
+  "dependencies": {
+    "@capacitor/core": "8.6.2"
+  }
 }
