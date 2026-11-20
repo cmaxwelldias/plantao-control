@@ -259,7 +259,7 @@ document.getElementById('importCalendar').onclick=async()=>{
    }
    pageToken=data.nextPageToken||'';
   }while(pageToken && pages<100);
-  save();calStatus(`${added} evento(s) importado(s); ${skipped} ignorado(s). ${pages} página(s) consultada(s). Eventos sem horário ou sem nome de hospital correspondente não foram importados.`);
+  save();calStatus(`${added} evento(s) importado(s); ${skipped} ignorado(s). ${pages} página(s) consultada(s). ${pageToken?'Limite de 100 páginas atingido; repita a importação para continuar. ':''}Eventos sem horário ou sem nome de hospital correspondente não foram importados.`);
  }catch(e){calStatus(e.message)}
 };
 render();
