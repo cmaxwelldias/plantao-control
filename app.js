@@ -235,3 +235,5 @@ document.getElementById('enableShiftAlerts').onclick=async()=>{
  if(permission==='granted')checkUpcomingShiftAlerts();
 };
 render();
+checkUpcomingShiftAlerts();
+setInterval(checkUpcomingShiftAlerts,10*60*1000);
