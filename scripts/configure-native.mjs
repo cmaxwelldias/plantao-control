@@ -1,4 +1,4 @@
-import { readFile, writeFile } from 'node:fs/promises';
+import { readFile, writeFile, access } from 'node:fs/promises';
 
 async function addAndroidPermissions() {
   const path = 'android/app/src/main/AndroidManifest.xml';
@@ -30,6 +30,7 @@ async function addIosUsageDescriptions() {
   }
   await writeFile(path, plist);
 }
-await addAndroidPermissions();
-await addIosUsageDescriptions();
+const exists = async path => access(path).then(() => true).catch(() => false);
+if (await exists('android/app/src/main/AndroidManifest.xml')) await addAndroidPermissions();
+if (await exists('ios/App/App/Info.plist')) await addIosUsageDescriptions();
 console.log('Permissões de câmera, microfone e biblioteca configuradas.');
