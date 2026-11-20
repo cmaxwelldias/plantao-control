@@ -24,7 +24,7 @@ assert.match(app, /nextPageToken/, 'Calendar import must handle pagination');
 assert.match(app, /normalizeDB/, 'Backups must be validated before use');
 assert.match(app, /google\.accounts\.oauth2\.revoke/, 'Disconnect must attempt OAuth revocation');
 assert.doesNotMatch(app, /localStorage\.setItem\([^,]*(?:access.?token|refresh.?token)/i, 'Google OAuth tokens must not be persisted');
-assert.match(sw, /plantao-control-v5/, 'The PWA cache must be versioned');
+assert.match(sw, /plantao-control-v6/, 'The PWA cache must be versioned');
 assert.match(sw, /app\.js/, 'The app bundle must be cached for offline use');
 assert.match(schema, /enable row level security/i, 'Cloud data must use RLS');
 assert.match(schema, /auth\.uid\(\)/i, 'Cloud policies must enforce per-user ownership');
