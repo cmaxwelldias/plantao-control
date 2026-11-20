@@ -9,6 +9,13 @@ test('abre o painel e apresenta os hospitais iniciais', async ({ page }) => {
   await expect(page.locator('#hospitalTable')).toContainText('HSL');
   await expect(page.locator('#hospitalTable')).toContainText("D'or");
   await expect(page.locator('#mQtd')).toHaveText('0');
+  await page.locator('[data-tab="plantoes"]').click();
+  await page.locator('#calendarView').selectOption('week');
+  await expect(page.locator('#calendarGrid [data-calendar-day]')).toHaveCount(7);
+  await page.locator('#calendarView').selectOption('year');
+  await expect(page.locator('#calendarGrid [data-calendar-month]')).toHaveCount(12);
+  await page.locator('#calendarGrid [data-calendar-month="10"]').click();
+  await expect(page.locator('#calendarView')).toHaveValue('month');
 });
 
 test('cadastra hospital, calcula adicional noturno e mostra no calendário', async ({ page }) => {
