@@ -1,4 +1,4 @@
-const CACHE='plantao-control-v6';
+const CACHE='plantao-control-v7';
 const FILES=['./','./index.html','./app.js','./manifest.webmanifest','./icon-192.png','./icon-512.png'];
 
 self.addEventListener('install',event=>{
@@ -9,7 +9,7 @@ self.addEventListener('install',event=>{
 self.addEventListener('activate',event=>{
  event.waitUntil((async()=>{
   const keys=await caches.keys();
-  await Promise.all(keys.filter(key=>key!==CACHE).map(key=>caches.delete(key)));
+  await Promise.all(keys.filter(key=>key.startsWith('plantao-control-')&&key!==CACHE).map(key=>caches.delete(key)));
   await self.clients.claim();
  })());
 });
