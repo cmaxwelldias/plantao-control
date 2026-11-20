@@ -34,7 +34,7 @@ catch(e){
  setTimeout(()=>alert('Os dados locais parecem inválidos. Para evitar travamento, o app abriu com uma base vazia. Uma cópia de recuperação foi preservada no navegador, quando possível. Não faça novas alterações antes de recuperar os dados.'),300);
 }
 function save(){try{db.schemaVersion=2;localStorage.setItem(KEY,JSON.stringify(db));render()}catch(e){alert('Não foi possível salvar os dados neste navegador. Exporte um backup e libere espaço no armazenamento.');console.error(e)}}
-function id(){return crypto.randomUUID?crypto.randomUUID():String(Date.now()+Math.random())}
+function id(){return crypto.randomUUID?crypto.randomUUID():(Date.now().toString(36)+Math.random().toString(36).slice(2))}
 function mins(t){let [h,m]=t.split(':').map(Number);return h*60+m}
 function nightOverlap(a,b){
  const ns=mins(db.nightStart),ne=mins(db.nightEnd),duration=Math.max(0,(b-a)/60000);
@@ -229,10 +229,13 @@ function checkUpcomingShiftAlerts(){
  status.textContent=upcoming.length?upcoming.length+' plantão(ões) próximo(s). '+(sent?sent+' aviso(s) enviado(s).':'Os avisos já foram exibidos neste período.'):'Nenhum plantão pendente nas próximas 24 horas.';
 }
 document.getElementById('enableShiftAlerts').onclick=async()=>{
- if(!('Notification' in window)){document.getElementById('shiftAlertStatus').textContent='Notificações não são compatíveis com este navegador.';return}
- const permission=await Notification.requestPermission();
- document.getElementById('shiftAlertStatus').textContent=permission==='granted'?'Notificações ativadas neste dispositivo.':'Permissão de notificação não concedida.';
- if(permission==='granted')checkUpcomingShiftAlerts();
+ const status=document.getElementById('shiftAlertStatus');
+ if(!('Notification' in window)){status.textContent='Notificações não são compatíveis com este navegador.';return}
+ try{
+  const permission=await Notification.requestPermission();
+  status.textContent=permission==='granted'?'Notificações ativadas neste dispositivo.':'Permissão de notificação não concedida.';
+  if(permission==='granted')checkUpcomingShiftAlerts();
+ }catch(error){status.textContent='O navegador não permitiu ativar notificações neste momento.';console.warn(error)}
 };
 render();
 checkUpcomingShiftAlerts();
