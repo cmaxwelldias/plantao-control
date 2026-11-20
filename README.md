@@ -13,10 +13,10 @@
 
 ## Limitações importantes
 1. Os dados do aplicativo ficam no armazenamento local de cada navegador/dispositivo. Não existe sincronização automática dos registros do app entre computador e celular nesta versão. Use Exportar/Importar backup para transferir os dados.
-2. A importação do Google Agenda importa eventos com horário definido cujo título contenha o nome cadastrado do hospital. Eventos de dia inteiro e eventos sem correspondência são ignorados. A importação não altera nem apaga eventos no Google.
+2. A importação do Google Agenda importa eventos com horário definido cujo título contenha o nome cadastrado do hospital. Eventos de dia inteiro e eventos sem correspondência são ignorados. A importação não altera nem apaga eventos no Google. A busca percorre páginas da API (até 100 páginas por operação) e evita reimportar eventos pelo ID do Google.
 3. A conexão Google requer um OAuth Client ID criado pelo proprietário da conta Google e a URL HTTPS de publicação. O ID é público; não coloque senhas ou client secrets no HTML.
 4. O cálculo usa horas reais e não aplica automaticamente hora noturna reduzida, regras trabalhistas, convenções coletivas, adicionais de horas extras ou arredondamentos. Configure os valores conforme contrato/folha de cada instituição.
-5. Para segurança, o token Google é mantido apenas na memória da sessão e deve ser autorizado novamente quando a página for reaberta.
+5. Para segurança, o token Google é mantido apenas na memória da sessão e deve ser autorizado novamente quando a página for reaberta. O botão Desconectar tenta revogar o token no Google; se não for possível, remova o acesso nas permissões da sua Conta Google.
 
 ## Publicação gratuita sugerida: GitHub Pages
 1. Crie uma conta gratuita em https://github.com/.
