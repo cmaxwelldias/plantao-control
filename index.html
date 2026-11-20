@@ -147,7 +147,7 @@ function normalizeDB(raw){
   if(!['Pendente','Realizado','Recebido'].includes(s.status)) throw Error('Status de plantão inválido no backup.');
   return {id:s.id,hospitalId:s.hospitalId,start,end,breakMins,status:s.status,notes:String(s.notes||'').slice(0,1000),...(typeof s.googleEventId==='string'?{googleEventId:s.googleEventId.slice(0,256)}:{})};
  });
- const timeOK=v=>typeof v==='string'&&/^([01]\\d|2[0-3]):[0-5]\\d$/.test(v);
+ const timeOK=v=>typeof v==='string'&&/^([01]\d|2[0-3]):[0-5]\d$/.test(v);
  if(!timeOK(raw.nightStart||'22:00')||!timeOK(raw.nightEnd||'05:00')) throw Error('Horário noturno inválido no backup.');
  return {schemaVersion:2,hospitals,shifts,nightStart:raw.nightStart||'22:00',nightEnd:raw.nightEnd||'05:00'};
 }
