@@ -61,6 +61,27 @@ function calc(s){
  if(h.nightMode==='total')nh=night/60*Number(h.nightValue);
  return {hours:totalMin/60,night:night/60,day:day/60,total:normal+nh};
 }
+let calendarCursor=new Date();calendarCursor.setDate(1);
+let selectedCalendarDay='';
+function localDayKey(d){const p=n=>String(n).padStart(2,'0');return d.getFullYear()+'-'+p(d.getMonth()+1)+'-'+p(d.getDate())}
+function renderCalendar(){
+ const year=calendarCursor.getFullYear(),month=calendarCursor.getMonth();
+ document.getElementById('calendarMonth').textContent=calendarCursor.toLocaleDateString('pt-BR',{month:'long',year:'numeric'});
+ const first=new Date(year,month,1).getDay(),count=new Date(year,month+1,0).getDate(),today=localDayKey(new Date());
+ let cells=Array(first).fill('<div class="cal-blank" aria-hidden="true"></div>');
+ for(let day=1;day<=count;day++){
+  const date=new Date(year,month,day),key=localDayKey(date),shifts=db.shifts.filter(s=>s.start.slice(0,10)===key);
+  const hours=shifts.reduce((sum,s)=>sum+calc(s).hours,0);
+  const classes=['cal-day',shifts.length?'has-shifts':'',key===today?'today':'',key===selectedCalendarDay?'selected':''].filter(Boolean).join(' ');
+  cells.push(`<button type="button" class="${classes}" data-calendar-day="${key}" aria-label="${day} de ${date.toLocaleDateString('pt-BR',{month:'long'})}, ${shifts.length} plantões"><strong>${day}</strong><span class="cal-count">${shifts.length?shifts.length+' plantão(s) · '+hours.toLocaleString('pt-BR',{maximumFractionDigits:1})+' h':''}</span></button>`);
+ }
+ document.getElementById('calendarGrid').innerHTML=cells.join('');
+ const details=document.getElementById('calendarDayDetails');
+ if(!selectedCalendarDay){details.textContent='Selecione um dia para ver os plantões.';return}
+ const shifts=db.shifts.filter(s=>s.start.slice(0,10)===selectedCalendarDay);
+ if(!shifts.length){details.textContent='Nenhum plantão em '+new Date(selectedCalendarDay+'T12:00:00').toLocaleDateString('pt-BR')+'.';return}
+ details.innerHTML='<b>'+new Date(selectedCalendarDay+'T12:00:00').toLocaleDateString('pt-BR',{dateStyle:'full'})+'</b><br>'+shifts.map(s=>{const h=db.hospitals.find(x=>x.id===s.hospitalId);return esc(h?.name||'Hospital removido')+' · '+dateFmt(s.start)+' · '+money(calc(s).total)}).join('<br>');
+}
 function render(){
  document.getElementById('nightStart').value=db.nightStart;document.getElementById('nightEnd').value=db.nightEnd;
  let opts=db.hospitals.map(h=>`<option value="${h.id}">${esc(h.name)} — ${money(h.dayRate)}/h</option>`).join('');
@@ -78,6 +99,7 @@ function render(){
  filter.innerHTML='<option value="all">Todos os meses</option>'+months.map(m=>`<option value="${m}">${m.split('-').reverse().join('/')}</option>`).join('');if(months.includes(old))filter.value=old;
  let shown=db.shifts.filter(s=>filter.value==='all'||s.start.slice(0,7)===filter.value).sort((a,b)=>b.start.localeCompare(a.start));
  document.getElementById('shiftTable').innerHTML=shown.length?`<table><thead><tr><th>Início</th><th>Hospital</th><th>Horas</th><th>Noturnas</th><th>Valor</th><th>Status</th><th></th></tr></thead><tbody>${shown.map(s=>{let h=db.hospitals.find(x=>x.id===s.hospitalId),c=calc(s);return `<tr><td>${dateFmt(s.start)}<br><span class="note">${dateFmt(s.end)}</span></td><td>${esc(h?.name||'—')}</td><td>${c.hours.toFixed(1)}</td><td>${c.night.toFixed(1)}</td><td><b>${money(c.total)}</b></td><td>${esc(s.status)}</td><td><div class="actions"><button class="btn small" data-action="edit-shift" data-id="${esc(s.id)}">Editar</button><button class="btn small danger" data-action="delete-shift" data-id="${esc(s.id)}">Excluir</button></div></td></tr>`}).join('')}</tbody></table>`:'<p class="empty">Nenhum plantão neste filtro.</p>';
+ renderCalendar();
 }
 function esc(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
 function nightLabel(h){return h.nightMode==='none'?'Sem adicional':h.nightMode==='percent'?`+${h.nightValue}%`:h.nightMode==='fixed'?`+${money(h.nightValue)}/h`:`${money(h.nightValue)}/h total`}
@@ -174,7 +196,11 @@ document.getElementById('importCalendar').onclick=async()=>{
   db.shifts.push(...pending);save();calStatus(`${added} evento(s) importado(s); ${skipped} ignorado(s). ${pages} página(s) consultada(s). ${pageToken?'Limite de 100 páginas atingido; repita a importação para continuar. ':''}Eventos sem horário ou sem nome de hospital correspondente não foram importados.`);
  }catch(e){calStatus(e.message)}
 };
+document.getElementById('calendarPrev').onclick=()=>{calendarCursor.setMonth(calendarCursor.getMonth()-1);selectedCalendarDay='';renderCalendar()};
+document.getElementById('calendarNext').onclick=()=>{calendarCursor.setMonth(calendarCursor.getMonth()+1);selectedCalendarDay='';renderCalendar()};
 document.addEventListener('click',event=>{
+ const dayButton=event.target.closest('[data-calendar-day]');
+ if(dayButton){selectedCalendarDay=dayButton.dataset.calendarDay;renderCalendar();return}
  const button=event.target.closest('[data-action]');if(!button)return;
  const targetId=button.dataset.id;
  switch(button.dataset.action){
