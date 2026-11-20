@@ -64,3 +64,44 @@ test('carrega a versão PWA e registra o service worker', async ({ page, context
   const swSupported = await page.evaluate(() => 'serviceWorker' in navigator);
   expect(swSupported).toBeTruthy();
 });
+
+
+test('calculadoras, notas e exportações funcionam', async ({ page }) => {
+  await page.locator('[data-tab="ferramentas"]').click();
+  await page.locator('#toolStart').fill('19:00');
+  await page.locator('#toolEnd').fill('07:00');
+  await page.locator('#toolRate').fill('31');
+  await page.locator('#toolCount').fill('2');
+  await page.locator('#toolDeduct').fill('10');
+  await page.locator('#toolShiftCalc').click();
+  await expect(page.locator('#toolCalcResult')).toContainText('24,00 h');
+  await expect(page.locator('#toolCalcResult')).toContainText('R$');
+
+  await page.locator('#basicExpression').fill('(120 + 80) / 2');
+  await page.locator('#basicCalculate').click();
+  await expect(page.locator('#basicResult')).toContainText('100');
+
+  await page.locator('[data-tool="notes"]').click();
+  await page.locator('#plantonicesNotes').fill('Anotação de teste');
+  await page.locator('#saveNotes').click();
+  await expect(page.locator('#notesStatus')).toContainText('salvas');
+
+  await page.locator('[data-tool="export"]').click();
+  const csvPromise = page.waitForEvent('download');
+  await page.locator('#exportCsv').click();
+  expect(await csvPromise).toBeTruthy();
+  const icsPromise = page.waitForEvent('download');
+  await page.locator('#exportIcs').click();
+  expect(await icsPromise).toBeTruthy();
+});
+
+test('arquivos podem ser adicionados ao armazenamento local', async ({ page }) => {
+  await page.locator('[data-tab="ferramentas"]').click();
+  await page.locator('[data-tool="files"]').click();
+  await page.locator('#assetInput').setInputFiles({
+    name: 'nota.txt',
+    mimeType: 'text/plain',
+    buffer: Buffer.from('arquivo de teste'),
+  });
+  await expect(page.locator('#assetList')).toContainText('nota.txt');
+});
