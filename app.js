@@ -210,4 +210,28 @@ document.addEventListener('click',event=>{
   case 'delete-shift':deleteShift(targetId);break;
  }
 });
+function checkUpcomingShiftAlerts(){
+ const status=document.getElementById('shiftAlertStatus');if(!status)return;
+ if(!('Notification' in window)){status.textContent='Este navegador não oferece notificações. Consulte o calendário para acompanhar os próximos plantões.';return}
+ if(Notification.permission!=='granted'){status.textContent='Ative as notificações para receber avisos neste dispositivo enquanto o aplicativo estiver aberto.';return}
+ const now=new Date(),limit=new Date(now.getTime()+24*60*60*1000);
+ const upcoming=db.shifts.filter(s=>s.status==='Pendente'&&new Date(s.start)>now&&new Date(s.start)<=limit);
+ let sent=0;
+ for(const shift of upcoming){
+  const key='plantao-alerted:'+shift.id+':'+localDayKey(new Date());
+  if(localStorage.getItem(key))continue;
+  const hospital=db.hospitals.find(h=>h.id===shift.hospitalId);
+  try{
+   new Notification('Plantão nas próximas 24 horas',{body:(hospital?.name||'Plantão')+' começa em '+dateFmt(shift.start),icon:'./icon-192.png',tag:'plantao-'+shift.id});
+   localStorage.setItem(key,'1');sent++;
+  }catch(error){console.warn('Não foi possível exibir o lembrete:',error)}
+ }
+ status.textContent=upcoming.length?upcoming.length+' plantão(ões) próximo(s). '+(sent?sent+' aviso(s) enviado(s).':'Os avisos já foram exibidos neste período.'):'Nenhum plantão pendente nas próximas 24 horas.';
+}
+document.getElementById('enableShiftAlerts').onclick=async()=>{
+ if(!('Notification' in window)){document.getElementById('shiftAlertStatus').textContent='Notificações não são compatíveis com este navegador.';return}
+ const permission=await Notification.requestPermission();
+ document.getElementById('shiftAlertStatus').textContent=permission==='granted'?'Notificações ativadas neste dispositivo.':'Permissão de notificação não concedida.';
+ if(permission==='granted')checkUpcomingShiftAlerts();
+};
 render();
