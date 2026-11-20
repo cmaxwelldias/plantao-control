@@ -13,6 +13,8 @@ permissions:
 jobs:
   browser-tests:
     runs-on: ubuntu-latest
+    container:
+      image: mcr.microsoft.com/playwright:v1.56.1-noble
     timeout-minutes: 15
     steps:
       - name: Baixar código
@@ -23,7 +25,5 @@ jobs:
           node-version: 22
       - name: Instalar dependências
         run: npm install
-      - name: Instalar Chromium
-        run: npx playwright install chromium
       - name: Executar testes de navegador
         run: npm test
