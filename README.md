@@ -7,9 +7,12 @@
 - Registro de plantões que atravessam a meia-noite.
 - Intervalo remunerado (não descontado).
 - Painel de horas, valores previstos e recebidos.
+- Calendário mensal visual com resumo diário dos plantões.
 - Backup JSON para transferir dados.
 - PWA instalável e cache offline.
 - Importação de eventos do Google Agenda por OAuth, em modo somente leitura.
+- Política de segurança de conteúdo (CSP), scripts externos e cache offline atualizado.
+- Validação automatizada da sintaxe e de invariantes de segurança no GitHub Actions.
 
 ## Limitações importantes
 1. Os dados do aplicativo ficam no armazenamento local de cada navegador/dispositivo. Não existe sincronização automática dos registros do app entre computador e celular nesta versão. Use Exportar/Importar backup para transferir os dados.
@@ -45,3 +48,7 @@ A API Google Calendar informa que o uso padrão não tem custo adicional, sujeit
 
 ## Privacidade e backup
 Os dados ficam no navegador. Exporte backup regularmente e mantenha uma cópia segura. Não use computador compartilhado sem proteger o perfil do navegador.
+
+## Preparação para sincronização em nuvem
+
+O arquivo `supabase/schema.sql` documenta a estrutura mínima para armazenar um documento JSON por usuário autenticado, com RLS e políticas de propriedade por `auth.uid()`. Ele é apenas um blueprint: ainda não existe um projeto Supabase provisionado nem login/sincronização ativos neste repositório. Nunca coloque a chave `service_role` ou uma chave secreta no navegador; o frontend deverá usar somente uma chave publicável, sempre combinada com Auth e RLS. A tabela também precisa estar habilitada para a Data API nas configurações do projeto, conforme a política de exposição atual do Supabase.
