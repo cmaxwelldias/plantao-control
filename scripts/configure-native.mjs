@@ -6,8 +6,6 @@ async function addAndroidPermissions() {
   const permissions = [
     '  <uses-permission android:name="android.permission.CAMERA" />',
     '  <uses-permission android:name="android.permission.RECORD_AUDIO" />',
-    '  <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />',
-    '  <uses-permission android:name="android.permission.READ_MEDIA_VIDEO" />',
   ];
   for (const permission of permissions) {
     const name = permission.match(/android:name="([^"]+)"/)[1];
