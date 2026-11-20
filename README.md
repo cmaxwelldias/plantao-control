@@ -8,6 +8,7 @@
 - Intervalo remunerado (não descontado).
 - Painel de horas, valores previstos e recebidos.
 - Calendário mensal visual com resumo diário dos plantões.
+- Lembretes locais para plantões nas próximas 24 horas, com permissão explícita do navegador.
 - Backup JSON para transferir dados.
 - PWA instalável e cache offline.
 - Importação de eventos do Google Agenda por OAuth, em modo somente leitura.
@@ -15,7 +16,7 @@
 - Validação automatizada da sintaxe e de invariantes de segurança no GitHub Actions.
 
 ## Limitações importantes
-1. Os dados do aplicativo ficam no armazenamento local de cada navegador/dispositivo. Não existe sincronização automática dos registros do app entre computador e celular nesta versão. Use Exportar/Importar backup para transferir os dados.
+1. Os dados do aplicativo ficam no armazenamento local de cada navegador/dispositivo. Os lembretes locais são verificados enquanto o app está aberto; não são notificações push garantidas quando o navegador está fechado. Não existe sincronização automática dos registros do app entre computador e celular nesta versão. Use Exportar/Importar backup para transferir os dados.
 2. A importação do Google Agenda importa eventos com horário definido cujo título contenha o nome cadastrado do hospital. Eventos de dia inteiro e eventos sem correspondência são ignorados. A importação não altera nem apaga eventos no Google. A busca percorre páginas da API (até 100 páginas por operação) e evita reimportar eventos pelo ID do Google.
 3. A conexão Google requer um OAuth Client ID criado pelo proprietário da conta Google e a URL HTTPS de publicação. O ID é público; não coloque senhas ou client secrets no HTML.
 4. O cálculo usa horas reais e não aplica automaticamente hora noturna reduzida, regras trabalhistas, convenções coletivas, adicionais de horas extras ou arredondamentos. Configure os valores conforme contrato/folha de cada instituição.
