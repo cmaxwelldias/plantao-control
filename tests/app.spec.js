@@ -19,6 +19,7 @@ test('abre o painel e apresenta os hospitais iniciais', async ({ page }) => {
 });
 
 test('cadastra hospital, calcula adicional noturno e mostra no calendário', async ({ page }) => {
+  await page.locator('[data-tab="hospitais"]').click();
   await page.locator('#hospitalName').fill('Hospital Teste');
   await page.locator('#hospitalAddress').fill('Rua de Teste, 100, Niterói');
   await page.locator('#hospitalModalities').fill('Tomografia, Ressonância');
