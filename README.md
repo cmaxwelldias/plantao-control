@@ -2,12 +2,12 @@
 
 ## O que está incluído
 - Cadastro inicial: HSL (R$ 31,00/h) e D'or (R$ 26,66/h).
-- Cadastro de hospitais e regras noturnas por instituição.
+- Cadastro de hospitais com endereço, modalidades, atalhos para Google Maps/Waze/Apple Maps e regras noturnas por instituição.
 - Faixa noturna configurável (padrão 22:00–05:00).
 - Registro de plantões que atravessam a meia-noite.
 - Intervalo remunerado (não descontado).
 - Painel de horas, valores previstos e recebidos.
-- Calendário mensal visual com resumo diário dos plantões.
+- Calendário mensal, semanal e anual com resumo diário dos plantões.
 - Lembretes locais para plantões nas próximas 24 horas, com permissão explícita do navegador.
 - Backup JSON para transferir dados.
 - PWA instalável e cache offline.
