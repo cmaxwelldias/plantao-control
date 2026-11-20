@@ -33,7 +33,7 @@ try {
   const page = await context.newPage();
   const dialogs = [];
   page.on('dialog', async dialog => { dialogs.push(dialog.message()); await dialog.accept(); });
-  await page.goto(\`http://127.0.0.1:\${address.port}/\`);
+  await page.goto(`http://127.0.0.1:${address.port}/`);
   await page.waitForSelector('#shiftForm');
 
   await page.locator('#shiftHospital').selectOption({ index: 0 });
