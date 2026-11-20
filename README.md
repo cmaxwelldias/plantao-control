@@ -12,6 +12,9 @@
 - Backup JSON para transferir dados.
 - PWA instalável e cache offline.
 - Importação de eventos do Google Agenda por OAuth, em modo somente leitura.
+- Política de segurança de conteúdo (CSP), JavaScript externo e cache offline atualizado.
+- Validação de backups e cópia de recuperação para dados locais inválidos.
+- Testes automatizados de sintaxe, segurança e fluxos principais no Chromium.
 - Política de segurança de conteúdo (CSP), scripts externos e cache offline atualizado.
 - Validação automatizada da sintaxe e de invariantes de segurança no GitHub Actions.
 
@@ -21,6 +24,7 @@
 3. A conexão Google requer um OAuth Client ID criado pelo proprietário da conta Google e a URL HTTPS de publicação. O ID é público; não coloque senhas ou client secrets no HTML.
 4. O cálculo usa horas reais e não aplica automaticamente hora noturna reduzida, regras trabalhistas, convenções coletivas, adicionais de horas extras ou arredondamentos. Configure os valores conforme contrato/folha de cada instituição.
 5. Para segurança, o token Google é mantido apenas na memória da sessão e deve ser autorizado novamente quando a página for reaberta. O botão Desconectar tenta revogar o token no Google; se não for possível, remova o acesso nas permissões da sua Conta Google.
+6. Os dados dos plantões continuam no armazenamento local do navegador. A validação do backup impede estruturas inválidas; se os dados locais estiverem corrompidos, o app tenta preservar uma cópia de recuperação antes de abrir uma base vazia.
 
 ## Publicação gratuita sugerida: GitHub Pages
 1. Crie uma conta gratuita em https://github.com/.
