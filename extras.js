@@ -133,7 +133,7 @@
   async function refreshAssets(){
     if(!assetDb)return;const list=await txStore('readonly',s=>s.getAll());
     $('#assetList').innerHTML=list.length?list.map(a=>'<div class="row" data-asset="'+a.id+'"><div style="min-width:0;flex:1"><b>'+escapeHtml(a.name)+'</b><div class="note">'+escapeHtml(a.type||'arquivo')+' · '+(a.size/1024/1024).toFixed(2)+' MB</div><div class="asset-preview"></div></div><button class="btn small" data-download="'+a.id+'">Baixar</button><button class="btn small danger" data-delete="'+a.id+'">Excluir</button></div>').join(''):'<p class="empty">Nenhum arquivo adicionado.</p>';
-    for(const a of list){if(a.type?.startsWith('image/')){const img=document.createElement('img');img.alt=a.name;img.style.maxWidth='100px';img.style.maxHeight='80px';img.src=URL.createObjectURL(a.blob);$('[data-asset="'+a.id+'"] .asset-preview').append(img)}}
+    for(const a of list){const preview=$('[data-asset="'+a.id+'"] .asset-preview');if(a.type?.startsWith('image/')){const img=document.createElement('img');img.alt=a.name;img.style.maxWidth='100px';img.style.maxHeight='80px';img.src=URL.createObjectURL(a.blob);preview.append(img)}else if(a.type?.startsWith('video/')||a.type?.startsWith('audio/')){const media=document.createElement(a.type.startsWith('video/')?'video':'audio');media.controls=true;media.preload='metadata';media.style.maxWidth='100%';media.src=URL.createObjectURL(a.blob);preview.append(media)}}
   }
   const escapeHtml=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   $('#assetInput').addEventListener('change',async e=>{
