@@ -13,11 +13,15 @@ test('abre o painel e apresenta os hospitais iniciais', async ({ page }) => {
 
 test('cadastra hospital, calcula adicional noturno e mostra no calendário', async ({ page }) => {
   await page.locator('#hospitalName').fill('Hospital Teste');
+  await page.locator('#hospitalAddress').fill('Rua de Teste, 100, Niterói');
+  await page.locator('#hospitalModalities').fill('Tomografia, Ressonância');
   await page.locator('#dayRate').fill('31');
   await page.locator('#nightMode').selectOption('percent');
   await page.locator('#nightValue').fill('20');
   await page.getByRole('button', { name: 'Salvar hospital' }).click();
   await expect(page.locator('#hospitalTable')).toContainText('Hospital Teste');
+  await expect(page.locator('#hospitalTable')).toContainText('Rua de Teste');
+  await expect(page.locator('#hospitalTable')).toContainText('Tomografia');
 
   await page.locator('[data-tab="plantoes"]').click();
   await page.locator('#shiftHospital').selectOption({ label: /Hospital Teste/ });
