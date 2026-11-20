@@ -3,6 +3,8 @@ name: Build Android e iOS
 on:
   workflow_dispatch:
   push:
+    branches:
+      - main
     tags:
       - 'v*'
 
