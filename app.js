@@ -69,7 +69,8 @@ function renderCalendar(){
  const year=calendarCursor.getFullYear(),month=calendarCursor.getMonth();
  const monthLabel=document.getElementById('calendarMonth');
  const grid=document.getElementById('calendarGrid');
- const today=localDayKey(new Date());\n document.querySelector('.calendar-weekdays').hidden=view==='year';
+ const today=localDayKey(new Date());
+ document.querySelector('.calendar-weekdays').hidden=view==='year';
  const dayButton=date=>{
   const key=localDayKey(date),shifts=db.shifts.filter(s=>s.start.slice(0,10)===key);
   const hours=shifts.reduce((sum,s)=>sum+calc(s).hours,0);
@@ -220,11 +221,13 @@ document.getElementById('importCalendar').onclick=async()=>{
   db.shifts.push(...pending);save();calStatus(`${added} evento(s) importado(s); ${skipped} ignorado(s). ${pages} página(s) consultada(s). ${pageToken?'Limite de 100 páginas atingido; repita a importação para continuar. ':''}Eventos sem horário ou sem nome de hospital correspondente não foram importados.`);
  }catch(e){calStatus(e.message)}
 };
-document.getElementById('calendarView').onchange=()=>renderCalendar();\ndocument.getElementById('calendarPrev').onclick=()=>{const v=document.getElementById('calendarView').value;if(v==='week')calendarCursor.setDate(calendarCursor.getDate()-7);else if(v==='year')calendarCursor.setFullYear(calendarCursor.getFullYear()-1);else calendarCursor=new Date(calendarCursor.getFullYear(),calendarCursor.getMonth()-1,1);selectedCalendarDay='';renderCalendar()};
+document.getElementById('calendarView').onchange=()=>renderCalendar();
+document.getElementById('calendarPrev').onclick=()=>{const v=document.getElementById('calendarView').value;if(v==='week')calendarCursor.setDate(calendarCursor.getDate()-7);else if(v==='year')calendarCursor.setFullYear(calendarCursor.getFullYear()-1);else calendarCursor=new Date(calendarCursor.getFullYear(),calendarCursor.getMonth()-1,1);selectedCalendarDay='';renderCalendar()};
 document.getElementById('calendarNext').onclick=()=>{const v=document.getElementById('calendarView').value;if(v==='week')calendarCursor.setDate(calendarCursor.getDate()+7);else if(v==='year')calendarCursor.setFullYear(calendarCursor.getFullYear()+1);else calendarCursor=new Date(calendarCursor.getFullYear(),calendarCursor.getMonth()+1,1);selectedCalendarDay='';renderCalendar()};
 document.addEventListener('click',event=>{
  const dayButton=event.target.closest('[data-calendar-day]');
- if(dayButton){selectedCalendarDay=dayButton.dataset.calendarDay;calendarCursor=new Date(selectedCalendarDay+'T12:00:00');renderCalendar();return}\n const monthButton=event.target.closest('[data-calendar-month]');if(monthButton){calendarCursor=new Date(calendarCursor.getFullYear(),Number(monthButton.dataset.calendarMonth),1);document.getElementById('calendarView').value='month';selectedCalendarDay='';renderCalendar();return}
+ if(dayButton){selectedCalendarDay=dayButton.dataset.calendarDay;calendarCursor=new Date(selectedCalendarDay+'T12:00:00');renderCalendar();return}
+ const monthButton=event.target.closest('[data-calendar-month]');if(monthButton){calendarCursor=new Date(calendarCursor.getFullYear(),Number(monthButton.dataset.calendarMonth),1);document.getElementById('calendarView').value='month';selectedCalendarDay='';renderCalendar();return}
  const button=event.target.closest('[data-action]');if(!button)return;
  const targetId=button.dataset.id;
  switch(button.dataset.action){
