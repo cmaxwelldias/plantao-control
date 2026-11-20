@@ -19,7 +19,7 @@
 - Testes de navegador com Playwright configurados no GitHub Actions.
 
 ## Limitações importantes
-1. Os dados de plantões e hospitais ficam no armazenamento local de cada navegador/dispositivo. Notas e anexos também permanecem locais; os anexos usam IndexedDB. Os lembretes locais são verificados enquanto o app está aberto; não são notificações push garantidas quando o navegador está fechado. Não existe sincronização automática dos registros do app entre computador e celular nesta versão. Use Exportar/Importar backup para transferir os dados.
+1. Os dados de plantões e hospitais ficam no armazenamento local e, após login, são sincronizados com a nuvem Supabase por usuário autenticado e protegidos por RLS. Notas e anexos permanecem locais; anexos usam IndexedDB e precisam de backup separado. Os lembretes locais são verificados enquanto o app está aberto; não são notificações push garantidas quando o navegador está fechado.
 2. A importação do Google Agenda importa eventos com horário definido cujo título contenha o nome cadastrado do hospital. Eventos de dia inteiro e eventos sem correspondência são ignorados. A importação não altera nem apaga eventos no Google. A busca percorre páginas da API (até 100 páginas por operação) e evita reimportar eventos pelo ID do Google.
 3. A conexão Google requer um OAuth Client ID criado pelo proprietário da conta Google e a URL HTTPS de publicação. O ID é público; não coloque senhas ou client secrets no HTML.
 4. O cálculo usa horas reais e não aplica automaticamente hora noturna reduzida, regras trabalhistas, convenções coletivas, adicionais de horas extras ou arredondamentos. Configure os valores conforme contrato/folha de cada instituição.
