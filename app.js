@@ -26,9 +26,13 @@ function normalizeDB(raw){
  if(!timeOK(raw.nightStart||'22:00')||!timeOK(raw.nightEnd||'05:00')) throw Error('Horário noturno inválido no backup.');
  return {schemaVersion:2,hospitals,shifts,nightStart:raw.nightStart||'22:00',nightEnd:raw.nightEnd||'05:00'};
 }
-let db;
-try{const stored=localStorage.getItem(KEY);db=stored?normalizeDB(JSON.parse(stored)):defaultDB();}
-catch(e){db=defaultDB();console.error('Não foi possível validar os dados locais:',e);setTimeout(()=>alert('Os dados salvos neste navegador parecem inválidos. O aplicativo abriu com uma base vazia para evitar travamento. Não salve alterações antes de recuperar um backup.'),300);}
+let db,corruptLocalData=null;
+try{corruptLocalData=localStorage.getItem(KEY);db=corruptLocalData?normalizeDB(JSON.parse(corruptLocalData)):defaultDB();}
+catch(e){
+ if(corruptLocalData){try{localStorage.setItem('plantao-control-recovery-backup',corruptLocalData)}catch(storageError){console.error('Não foi possível preservar a cópia de recuperação:',storageError)}}
+ db=defaultDB();console.error('Não foi possível validar os dados locais:',e);
+ setTimeout(()=>alert('Os dados locais parecem inválidos. Para evitar travamento, o app abriu com uma base vazia. Uma cópia de recuperação foi preservada no navegador, quando possível. Não faça novas alterações antes de recuperar os dados.'),300);
+}
 function save(){try{db.schemaVersion=2;localStorage.setItem(KEY,JSON.stringify(db));render()}catch(e){alert('Não foi possível salvar os dados neste navegador. Exporte um backup e libere espaço no armazenamento.');console.error(e)}}
 function id(){return crypto.randomUUID?crypto.randomUUID():String(Date.now()+Math.random())}
 function mins(t){let [h,m]=t.split(':').map(Number);return h*60+m}
