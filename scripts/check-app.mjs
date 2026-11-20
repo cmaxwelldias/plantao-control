@@ -7,9 +7,13 @@ const html = readFileSync(new URL('index.html', root), 'utf8');
 const app = readFileSync(new URL('app.js', root), 'utf8');
 const sw = readFileSync(new URL('sw.js', root), 'utf8');
 const schema = readFileSync(new URL('supabase/schema.sql', root), 'utf8');
+const cloud = readFileSync(new URL('cloud-sync.js', root), 'utf8');
+const config = readFileSync(new URL('supabase-config.js', root), 'utf8');
 
 new Script(app, { filename: 'app.js' });
 new Script(sw, { filename: 'sw.js' });
+new Script(cloud, { filename: 'cloud-sync.js' });
+new Script(config, { filename: 'supabase-config.js' });
 
 assert.match(html, /Content-Security-Policy/i, 'A Content Security Policy must be present');
 assert.match(html, /src=["']\.\/app\.js["']/i, 'The app must load its external script');
@@ -24,7 +28,8 @@ assert.match(app, /nextPageToken/, 'Calendar import must handle pagination');
 assert.match(app, /normalizeDB/, 'Backups must be validated before use');
 assert.match(app, /google\.accounts\.oauth2\.revoke/, 'Disconnect must attempt OAuth revocation');
 assert.doesNotMatch(app, /localStorage\.setItem\([^,]*(?:access.?token|refresh.?token)/i, 'Google OAuth tokens must not be persisted');
-assert.match(sw, /plantao-control-v7/, 'The PWA cache must be versioned');
+assert.match(sw, /plantonices-v14/, 'The PWA cache must be versioned');
+assert.match(sw, /cloud-sync\\.js/, 'The cloud client must be cached for offline app startup');
 assert.match(sw, /app\.js/, 'The app bundle must be cached for offline use');
 assert.match(sw, /startsWith\('plantao-control-'\)/, 'Cache cleanup must not delete caches belonging to other apps on the same origin');
 assert.match(schema, /enable row level security/i, 'Cloud data must use RLS');
