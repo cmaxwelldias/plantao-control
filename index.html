@@ -116,6 +116,8 @@ footer{color:var(--muted);font-size:12px;margin-top:18px}
    <form id="hospitalForm">
     <input type="hidden" id="hospitalId">
     <label>Nome<input id="hospitalName" required placeholder="Nome da instituição"></label>
+    <label>Endereço<input id="hospitalAddress" maxlength="250" placeholder="Rua, número, bairro, cidade"></label>
+    <label>Modalidades de atendimento<input id="hospitalModalities" maxlength="500" placeholder="Tomografia, Ressonância, Raios-X"></label>
     <label>Valor da hora diurna (R$)<input id="dayRate" required type="number" min="0" step=".01" placeholder="31,00"></label>
     <label>Regra noturna<select id="nightMode"><option value="none">Sem adicional</option><option value="percent">Percentual adicional</option><option value="fixed">Valor adicional por hora noturna</option><option value="total">Valor total da hora noturna</option></select></label>
     <label id="nightValueLabel">Adicional / percentual / valor noturno<input id="nightValue" type="number" min="0" step=".01" value="0"></label>
