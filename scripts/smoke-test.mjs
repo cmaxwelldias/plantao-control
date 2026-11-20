@@ -73,6 +73,7 @@ try {
   });
 
   await page.locator('[data-tab="dados"]').click();
+  await page.locator('button[data-tab="dados"]').click();
   await page.locator('#googleClientId').fill('1234567890-test.apps.googleusercontent.com');
   await page.locator('#connectGoogle').click();
   await page.locator('#calFrom').fill('2026-11-23');
