@@ -58,9 +58,11 @@ A API Google Calendar informa que o uso padrão não tem custo adicional, sujeit
 ## Privacidade e backup
 Os dados ficam no navegador. Exporte backup regularmente e mantenha uma cópia segura. Não use computador compartilhado sem proteger o perfil do navegador.
 
-## Preparação para sincronização em nuvem
+## Sincronização em nuvem
 
-O arquivo `supabase/schema.sql` documenta a estrutura mínima para armazenar um documento JSON por usuário autenticado, com RLS e políticas de propriedade por `auth.uid()`. Ele é apenas um blueprint: ainda não existe um projeto Supabase provisionado nem login/sincronização ativos neste repositório. Nunca coloque a chave `service_role` ou uma chave secreta no navegador; o frontend deverá usar somente uma chave publicável, sempre combinada com Auth e RLS. A tabela também precisa estar habilitada para a Data API nas configurações do projeto, conforme a política de exposição atual do Supabase.
+O projeto Supabase `Plantonices` está provisionado e ativo na região de São Paulo. A tabela `public.user_data` tem RLS ativo e quatro políticas que restringem cada registro ao usuário autenticado correspondente a `auth.uid()`. O aplicativo usa somente a chave publicável no navegador; nenhuma chave administrativa ou segredo foi incluído no frontend. Na seção Backup e agenda, crie uma conta com e-mail e senha, confirme o endereço de e-mail se solicitado e entre para sincronizar hospitais e plantões. A aplicação salva os registros na nuvem e consulta atualizações de outros dispositivos periodicamente.
+
+Notas e anexos (fotos, vídeos, áudios e documentos) permanecem no dispositivo e não são sincronizados na nuvem nesta versão. Faça backup separado desses arquivos. O plano gratuito tem limites de armazenamento e uso; o app não ativa upgrades pagos.
 
 
 ## Testes automatizados
