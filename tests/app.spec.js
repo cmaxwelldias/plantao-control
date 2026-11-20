@@ -118,3 +118,41 @@ test('arquivos podem ser adicionados ao armazenamento local', async ({ page }) =
   });
   await expect(page.locator('#assetList')).toContainText('nota.txt');
 });
+
+test('cria conta e sincroniza alterações dos plantões com a nuvem', async ({ page }) => {
+  let uploadedPayload = null;
+  let writes = 0;
+  await page.route('https://qmpjupocsnbzecleklmo.supabase.co/auth/v1/signup', async route => {
+    await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({
+      access_token: 'test-access-token', refresh_token: 'test-refresh-token', expires_in: 3600,
+      user: { id: 'test-user-id', email: 'teste@example.com' }
+    }) });
+  });
+  await page.route('https://qmpjupocsnbzecleklmo.supabase.co/rest/v1/user_data**', async route => {
+    if (route.request().method() === 'GET') {
+      await route.fulfill({ status: 200, contentType: 'application/json', body: '[]' });
+      return;
+    }
+    const headers = route.request().headers();
+    expect(headers.authorization).toBe('Bearer test-access-token');
+    expect(headers.apikey).toMatch(/^sb_publishable_/);
+    uploadedPayload = route.request().postDataJSON().payload;
+    writes++;
+    await route.fulfill({ status: 201, contentType: 'application/json', body: JSON.stringify([{ updated_at: new Date().toISOString() }]) });
+  });
+
+  await page.locator('[data-tab="dados"]').click();
+  await page.locator('#cloudEmail').fill('teste@example.com');
+  await page.locator('#cloudPassword').fill('senha-de-teste-123');
+  await page.locator('#cloudSignUp').click();
+  await expect(page.locator('#cloudStatus')).toContainText('Primeiro backup enviado à nuvem');
+  await expect(page.locator('#cloudUser')).toContainText('teste@example.com');
+
+  await page.locator('[data-tab="plantoes"]').click();
+  await page.locator('#shiftHospital').selectOption({ index: 0 });
+  await page.locator('#start').fill('2026-11-25T07:00');
+  await page.locator('#end').fill('2026-11-25T19:00');
+  await page.locator('#shiftForm button[type="submit"]').click();
+  await expect.poll(() => uploadedPayload?.shifts?.length || 0).toBe(1);
+  expect(writes).toBeGreaterThanOrEqual(2);
+});
