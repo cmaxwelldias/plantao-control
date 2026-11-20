@@ -13,7 +13,7 @@ function normalizeDB(raw){
   if(!h || !validId(h.id) || ids.has(h.id) || typeof h.name!=='string' || !h.name.trim() || h.name.length>100) throw Error('Hospital inválido ou duplicado no backup.');
   ids.add(h.id);const dayRate=Number(h.dayRate),nightValue=Number(h.nightValue||0);
   if(!Number.isFinite(dayRate)||dayRate<0||!Number.isFinite(nightValue)||nightValue<0||!['none','percent','fixed','total'].includes(h.nightMode)) throw Error('Valores ou regra noturna inválidos no backup.');
-  return {id:h.id,name:h.name.trim(),dayRate,nightMode:h.nightMode,nightValue,address:String(h.address||'').slice(0,250),modalities:Array.isArray(h.modalities)?h.modalities.filter(x=>typeof x==='string').map(x=>x.trim()).filter(Boolean).slice(0,20):[]};
+  return {id:h.id,name:h.name.trim(),dayRate,nightMode:h.nightMode,nightValue,address:String(h.address||'').slice(0,250),modalities:Array.isArray(h.modalities)?h.modalities.filter(x=>typeof x==='string').map(x=>x.trim()).filter(Boolean).slice(0,20):[],photo:typeof h.photo==='string'&&h.photo.startsWith('data:image/')&&h.photo.length<600000?h.photo:''};
  });
  const shiftIds=new Set(),shifts=raw.shifts.map(s=>{
   if(!s||!validId(s.id)||shiftIds.has(s.id)||!ids.has(s.hospitalId)) throw Error('Plantão inválido, duplicado ou associado a hospital inexistente.');
@@ -111,7 +111,7 @@ function render(){
  document.getElementById('nightStart').value=db.nightStart;document.getElementById('nightEnd').value=db.nightEnd;
  let opts=db.hospitals.map(h=>`<option value="${h.id}">${esc(h.name)} — ${money(h.dayRate)}/h</option>`).join('');
  document.getElementById('shiftHospital').innerHTML=opts||'<option value="">Cadastre um hospital</option>';
- document.getElementById('hospitalTable').innerHTML=db.hospitals.length?`<table><thead><tr><th>Instituição</th><th>Hora diurna</th><th>Regra noturna</th><th></th></tr></thead><tbody>${db.hospitals.map(h=>`<tr><td><b>${esc(h.name)}</b><br><span class="note">${esc(h.address||'')}</span>${h.address?'<br><a target="_blank" rel="noopener noreferrer" href="https://www.google.com/maps/search/?api=1&query='+encodeURIComponent(h.address)+'">Google Maps</a> · <a target="_blank" rel="noopener noreferrer" href="https://waze.com/ul?q='+encodeURIComponent(h.address)+'&navigate=yes">Waze</a> · <a target="_blank" rel="noopener noreferrer" href="https://maps.apple.com/?q='+encodeURIComponent(h.address)+'">Apple Maps</a>':''}${h.modalities?.length?'<br><span class="note">'+h.modalities.map(esc).join(' · ')+'</span>':''}</td><td>${money(h.dayRate)}</td><td>${nightLabel(h)}</td><td><div class="actions"><button class="btn small" data-action="edit-hospital" data-id="${esc(h.id)}">Editar</button><button class="btn small danger" data-action="delete-hospital" data-id="${esc(h.id)}">Excluir</button></div></td></tr>`).join('')}</tbody></table>`:'<p class="empty">Nenhum hospital cadastrado.</p>';
+ document.getElementById('hospitalTable').innerHTML=db.hospitals.length?`<table><thead><tr><th>Instituição</th><th>Hora diurna</th><th>Regra noturna</th><th></th></tr></thead><tbody>${db.hospitals.map(h=>`<tr><td>${h.photo?'<img src="'+h.photo+'" alt="Foto de '+esc(h.name)+'" style="width:56px;height:56px;object-fit:cover;border-radius:8px;vertical-align:middle;margin-right:8px">':''}<b>${esc(h.name)}</b><br><span class="note">${esc(h.address||'')}</span>${h.address?'<br><a target="_blank" rel="noopener noreferrer" href="https://www.google.com/maps/search/?api=1&query='+encodeURIComponent(h.address)+'">Google Maps</a> · <a target="_blank" rel="noopener noreferrer" href="https://waze.com/ul?q='+encodeURIComponent(h.address)+'&navigate=yes">Waze</a> · <a target="_blank" rel="noopener noreferrer" href="https://maps.apple.com/?q='+encodeURIComponent(h.address)+'">Apple Maps</a>':''}${h.modalities?.length?'<br><span class="note">'+h.modalities.map(esc).join(' · ')+'</span>':''}</td><td>${money(h.dayRate)}</td><td>${nightLabel(h)}</td><td><div class="actions"><button class="btn small" data-action="edit-hospital" data-id="${esc(h.id)}">Editar</button><button class="btn small danger" data-action="delete-hospital" data-id="${esc(h.id)}">Excluir</button></div></td></tr>`).join('')}</tbody></table>`:'<p class="empty">Nenhum hospital cadastrado.</p>';
  let totalH=0,total=0,paid=0;db.shifts.forEach(s=>{let c=calc(s);totalH+=c.hours;total+=c.total;if(s.status==='Recebido')paid+=c.total});
  document.getElementById('mHoras').textContent=(totalH).toLocaleString('pt-BR',{maximumFractionDigits:1})+' h';
  document.getElementById('mQtd').textContent=db.shifts.length;
@@ -129,10 +129,43 @@ function render(){
 function esc(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
 function nightLabel(h){return h.nightMode==='none'?'Sem adicional':h.nightMode==='percent'?`+${h.nightValue}%`:h.nightMode==='fixed'?`+${money(h.nightValue)}/h`:`${money(h.nightValue)}/h total`}
 document.querySelectorAll('nav button').forEach(b=>b.onclick=()=>{document.querySelectorAll('nav button').forEach(x=>x.classList.toggle('active',x===b));document.querySelectorAll('.section').forEach(x=>x.classList.toggle('active',x.id===b.dataset.tab))});
-document.getElementById('hospitalForm').onsubmit=e=>{e.preventDefault();let hid=document.getElementById('hospitalId').value,obj={id:hid||id(),name:document.getElementById('hospitalName').value.trim(),dayRate:Number(document.getElementById('dayRate').value),nightMode:document.getElementById('nightMode').value,nightValue:Number(document.getElementById('nightValue').value||0),address:document.getElementById('hospitalAddress').value.trim(),modalities:document.getElementById('hospitalModalities').value.split(',').map(x=>x.trim()).filter(Boolean).slice(0,20)};if(hid)db.hospitals=db.hospitals.map(x=>x.id===hid?obj:x);else db.hospitals.push(obj);e.target.reset();document.getElementById('hospitalId').value='';document.getElementById('hospitalTitle').textContent='Cadastrar hospital';save()};
-window.editHospital=hid=>{let h=db.hospitals.find(x=>x.id===hid);document.getElementById('hospitalId').value=h.id;document.getElementById('hospitalName').value=h.name;document.getElementById('hospitalAddress').value=h.address||'';document.getElementById('hospitalModalities').value=(h.modalities||[]).join(', ');document.getElementById('dayRate').value=h.dayRate;document.getElementById('nightMode').value=h.nightMode;document.getElementById('nightValue').value=h.nightValue;document.getElementById('hospitalTitle').textContent='Editar hospital';document.querySelector('[data-tab="hospitais"]').click()};
+function compressHospitalPhoto(file){
+ return new Promise((resolve,reject)=>{
+  const reader=new FileReader();
+  reader.onerror=()=>reject(Error('Não foi possível ler a foto.'));
+  reader.onload=()=>{
+   const img=new Image();
+   img.onerror=()=>reject(Error('Arquivo de imagem inválido.'));
+   img.onload=()=>{
+    const scale=Math.min(1,320/Math.max(img.width,img.height)),canvas=document.createElement('canvas');
+    canvas.width=Math.max(1,Math.round(img.width*scale));canvas.height=Math.max(1,Math.round(img.height*scale));
+    canvas.getContext('2d').drawImage(img,0,0,canvas.width,canvas.height);
+    resolve(canvas.toDataURL('image/jpeg',0.68));
+   };
+   img.src=reader.result;
+  };
+  reader.readAsDataURL(file);
+ });
+}
+document.getElementById('hospitalPhoto').onchange=async e=>{
+ const file=e.target.files[0],preview=document.getElementById('hospitalPhotoPreview');
+ if(!file){preview.hidden=true;preview.removeAttribute('src');return}
+ if(!file.type.startsWith('image/')){alert('Selecione um arquivo de imagem.');e.target.value='';return}
+ try{preview.src=await compressHospitalPhoto(file);preview.hidden=false}catch(err){alert(err.message)}
+};
+document.getElementById('hospitalForm').onsubmit=async e=>{
+ e.preventDefault();
+ const hid=document.getElementById('hospitalId').value,old=hid?db.hospitals.find(x=>x.id===hid):null;
+ let photo=old?.photo||'';
+ const file=document.getElementById('hospitalPhoto').files[0];
+ try{if(file)photo=await compressHospitalPhoto(file)}catch(err){alert(err.message);return}
+ const obj={id:hid||id(),name:document.getElementById('hospitalName').value.trim(),dayRate:Number(document.getElementById('dayRate').value),nightMode:document.getElementById('nightMode').value,nightValue:Number(document.getElementById('nightValue').value||0),address:document.getElementById('hospitalAddress').value.trim(),modalities:document.getElementById('hospitalModalities').value.split(',').map(x=>x.trim()).filter(Boolean).slice(0,20),photo};
+ if(hid)db.hospitals=db.hospitals.map(x=>x.id===hid?obj:x);else db.hospitals.push(obj);
+ e.target.reset();document.getElementById('hospitalId').value='';document.getElementById('hospitalPhotoPreview').hidden=true;document.getElementById('hospitalTitle').textContent='Cadastrar hospital';save();
+};
+window.editHospital=hid=>{let h=db.hospitals.find(x=>x.id===hid);document.getElementById('hospitalId').value=h.id;document.getElementById('hospitalName').value=h.name;const photoPreview=document.getElementById('hospitalPhotoPreview');photoPreview.src=h.photo||'';photoPreview.hidden=!h.photo;document.getElementById('hospitalAddress').value=h.address||'';document.getElementById('hospitalModalities').value=(h.modalities||[]).join(', ');document.getElementById('dayRate').value=h.dayRate;document.getElementById('nightMode').value=h.nightMode;document.getElementById('nightValue').value=h.nightValue;document.getElementById('hospitalTitle').textContent='Editar hospital';document.querySelector('[data-tab="hospitais"]').click()};
 window.deleteHospital=hid=>{if(db.shifts.some(s=>s.hospitalId===hid)){alert('Este hospital possui plantões. Edite ou exclua os plantões antes de remover.');return}if(confirm('Excluir este hospital?')){db.hospitals=db.hospitals.filter(h=>h.id!==hid);save()}};
-document.getElementById('cancelHospital').onclick=()=>{document.getElementById('hospitalForm').reset();document.getElementById('hospitalId').value='';document.getElementById('hospitalTitle').textContent='Cadastrar hospital'};
+document.getElementById('cancelHospital').onclick=()=>{document.getElementById('hospitalForm').reset();document.getElementById('hospitalPhotoPreview').hidden=true;document.getElementById('hospitalId').value='';document.getElementById('hospitalTitle').textContent='Cadastrar hospital'};
 document.getElementById('saveGeneral').onclick=()=>{db.nightStart=document.getElementById('nightStart').value;db.nightEnd=document.getElementById('nightEnd').value;save();alert('Horário noturno salvo.')};
 document.getElementById('shiftForm').onsubmit=e=>{e.preventDefault();let sid=document.getElementById('shiftId').value,s={id:sid||id(),hospitalId:document.getElementById('shiftHospital').value,start:document.getElementById('start').value,end:document.getElementById('end').value,breakMins:Number(document.getElementById('breakMins').value||0),status:document.getElementById('status').value,notes:document.getElementById('notes').value};if(new Date(s.end)<=new Date(s.start)){alert('O término deve ser posterior ao início.');return}if(sid)db.shifts=db.shifts.map(x=>x.id===sid?s:x);else db.shifts.push(s);clearShift();save()};
 function clearShift(){document.getElementById('shiftForm').reset();document.getElementById('shiftId').value='';document.getElementById('breakMins').value=0;document.getElementById('formTitle').textContent='Adicionar plantão'}
