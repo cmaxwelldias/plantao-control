@@ -99,7 +99,7 @@
     const hours=duration($('#toolStart').value,$('#toolEnd').value),rate=Number($('#toolRate').value),count=Number($('#toolCount').value),fixed=Number($('#toolFixed').value),deduct=Number($('#toolDeduct').value);
     if(!Number.isFinite(rate)||rate<0||!Number.isFinite(fixed)||fixed<0||!Number.isInteger(count)||count<1||count>1000||!Number.isFinite(deduct)||deduct<0||deduct>100){$('#toolCalcResult').textContent='Confira os valores informados.';return}
     const gross=(fixed>0?fixed:hours*rate)*count,net=gross*(1-deduct/100);
-    $('#toolCalcResult').innerHTML='Horas por plantão: <b>'+hours.toFixed(2)+' h</b><br>Horas totais: <b>'+(hours*count).toFixed(2)+' h</b><br>Bruto: <b>'+money(gross)+'</b><br>Deduções: <b>'+money(gross-net)+'</b><br>Líquido estimado: <b class="total">'+money(net)+'</b>';
+    $('#toolCalcResult').innerHTML='Horas por plantão: <b>'+hours.toFixed(2)+' h</b><br>Horas totais: <b>'+(hours*count).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2})+' h</b><br>Bruto: <b>'+money(gross)+'</b><br>Deduções: <b>'+money(gross-net)+'</b><br>Líquido estimado: <b class="total">'+money(net)+'</b>';
   });
 
   // Parser aritmético sem eval/Function: somente números, parênteses e operadores básicos.
