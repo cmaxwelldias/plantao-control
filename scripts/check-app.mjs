@@ -10,7 +10,6 @@ const schema = readFileSync(new URL('supabase/schema.sql', root), 'utf8');
 const cloud = readFileSync(new URL('cloud-sync.js', root), 'utf8');
 const config = readFileSync(new URL('supabase-config.js', root), 'utf8');
 const mobilePrep = readFileSync(new URL('scripts/prepare-mobile.mjs', root), 'utf8');
-const mobilePrep = readFileSync(new URL('scripts/prepare-mobile.mjs', root), 'utf8');
 
 new Script(app, { filename: 'app.js' });
 new Script(sw, { filename: 'sw.js' });
