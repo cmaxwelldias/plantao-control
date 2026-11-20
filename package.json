@@ -1,0 +1,13 @@
+{
+  "name": "plantonices",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Plantonices — gerenciador multiplataforma de plantões",
+  "scripts": {
+    "test": "playwright test",
+    "test:headed": "playwright test --headed"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.56.1"
+  }
+}
