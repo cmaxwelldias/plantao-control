@@ -24,6 +24,6 @@ jobs:
       - name: Instalar dependências
         run: npm install
       - name: Instalar Chromium
-        run: npx playwright install --with-deps chromium
+        run: npx playwright install chromium
       - name: Executar testes de navegador
         run: npm test
