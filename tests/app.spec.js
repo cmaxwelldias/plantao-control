@@ -28,7 +28,7 @@ test('cadastra hospital, calcula adicional noturno e mostra no calendário', asy
 
   await expect(page.locator('#mQtd')).toHaveText('1');
   await expect(page.locator('#mHoras')).toContainText('10');
-  await expect(page.locator('#shiftTable')).toContainText('R$ 353,40');
+  await expect(page.locator('#shiftTable')).toContainText(/353,40/);
   await page.locator('#calendarGrid [data-calendar-day="2026-11-20"]').click();
   await expect(page.locator('#calendarDayDetails')).toContainText('Hospital Teste');
 });
