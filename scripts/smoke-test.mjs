@@ -12,8 +12,9 @@ const server = createServer(async (req, res) => {
     const pathname = decodeURIComponent(new URL(req.url, 'http://localhost').pathname);
     const target = resolve(root, '.' + pathname);
     if (target !== root && !target.startsWith(root + sep)) { res.writeHead(403).end(); return; }
-    const file = await readFile(target.endsWith(sep) ? resolve(target, 'index.html') : target);
-    res.writeHead(200, { 'Content-Type': types[extname(target)] || 'application/octet-stream' });
+    const filePath = target === root || pathname.endsWith('/') ? resolve(target, 'index.html') : target;
+    const file = await readFile(filePath);
+    res.writeHead(200, { 'Content-Type': types[extname(filePath)] || 'application/octet-stream' });
     res.end(file);
   } catch { res.writeHead(404).end('Not found'); }
 });
@@ -21,7 +22,7 @@ await new Promise(resolveListen => server.listen(0, '127.0.0.1', resolveListen))
 const address = server.address();
 const browser = await chromium.launch({ headless: true, args: ['--no-sandbox'] });
 try {
-  const context = await browser.newContext();
+  const context = await browser.newContext({ timezoneId: 'America/Sao_Paulo' });
   await context.addInitScript(() => {
     window.__revoked = false;
     window.google = { accounts: { oauth2: {
