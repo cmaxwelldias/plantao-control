@@ -24,7 +24,7 @@ test('cadastra hospital, calcula adicional noturno e mostra no calendário', asy
   await expect(page.locator('#hospitalTable')).toContainText('Tomografia');
 
   await page.locator('[data-tab="plantoes"]').click();
-  await page.locator('#shiftHospital').selectOption({ label: /Hospital Teste/ });
+  await page.locator('#shiftHospital').selectOption({ index: 2 });
   await page.locator('#start').fill('2026-11-20T21:00');
   await page.locator('#end').fill('2026-11-21T07:00');
   await page.locator('#breakMins').fill('0');
@@ -39,7 +39,7 @@ test('cadastra hospital, calcula adicional noturno e mostra no calendário', asy
 
 test('impede término anterior ao início e preserva dados no backup', async ({ page }) => {
   await page.locator('[data-tab="plantoes"]').click();
-  await page.locator('#shiftHospital').selectOption({ label: /HSL/ });
+  await page.locator('#shiftHospital').selectOption({ index: 0 });
   await page.locator('#start').fill('2026-11-20T19:00');
   await page.locator('#end').fill('2026-11-20T07:00');
   page.once('dialog', dialog => dialog.accept());
