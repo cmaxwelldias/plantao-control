@@ -1,0 +1,12 @@
+{
+  "appId": "com.maxwelldias.plantonices",
+  "appName": "Plantonices",
+  "webDir": "www",
+  "backgroundColor": "#f3f6fa",
+  "ios": {
+    "contentInset": "automatic"
+  },
+  "android": {
+    "allowMixedContent": false
+  }
+}
