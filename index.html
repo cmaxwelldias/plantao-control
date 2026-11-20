@@ -127,20 +127,50 @@ footer{color:var(--muted);font-size:12px;margin-top:18px}
 const KEY='plantao-control-v1';
 const money=n=>Number(n||0).toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
 const dateFmt=s=>new Date(s).toLocaleString('pt-BR',{dateStyle:'short',timeStyle:'short'});
-let db=JSON.parse(localStorage.getItem(KEY)||'null')||{hospitals:[
+function defaultDB(){return {schemaVersion:2,hospitals:[
 {id:'hsl',name:'HSL',dayRate:31,nightMode:'none',nightValue:0},
 {id:'dor',name:"D'or",dayRate:26.66,nightMode:'none',nightValue:0}
-],shifts:[],nightStart:'22:00',nightEnd:'05:00'};
-function save(){localStorage.setItem(KEY,JSON.stringify(db));render()}
+],shifts:[],nightStart:'22:00',nightEnd:'05:00'}}
+function validId(v){return typeof v==='string' && /^[a-zA-Z0-9_-]{1,80}$/.test(v)}
+function normalizeDB(raw){
+ if(!raw || typeof raw!=='object' || !Array.isArray(raw.hospitals) || !Array.isArray(raw.shifts)) throw Error('Estrutura de backup inválida.');
+ const ids=new Set(), hospitals=raw.hospitals.map(h=>{
+  if(!h || !validId(h.id) || ids.has(h.id) || typeof h.name!=='string' || !h.name.trim() || h.name.length>100) throw Error('Hospital inválido ou duplicado no backup.');
+  ids.add(h.id);const dayRate=Number(h.dayRate),nightValue=Number(h.nightValue||0);
+  if(!Number.isFinite(dayRate)||dayRate<0||!Number.isFinite(nightValue)||nightValue<0||!['none','percent','fixed','total'].includes(h.nightMode)) throw Error('Valores ou regra noturna inválidos no backup.');
+  return {id:h.id,name:h.name.trim(),dayRate,nightMode:h.nightMode,nightValue};
+ });
+ const shiftIds=new Set(),shifts=raw.shifts.map(s=>{
+  if(!s||!validId(s.id)||shiftIds.has(s.id)||!ids.has(s.hospitalId)) throw Error('Plantão inválido, duplicado ou associado a hospital inexistente.');
+  shiftIds.add(s.id);const start=String(s.start||''),end=String(s.end||''),breakMins=Number(s.breakMins||0);
+  if(!Number.isFinite(new Date(start).getTime())||!Number.isFinite(new Date(end).getTime())||new Date(end)<=new Date(start)||!Number.isFinite(breakMins)||breakMins<0||breakMins>1440) throw Error('Datas ou intervalo inválidos em um plantão.');
+  if(!['Pendente','Realizado','Recebido'].includes(s.status)) throw Error('Status de plantão inválido no backup.');
+  return {id:s.id,hospitalId:s.hospitalId,start,end,breakMins,status:s.status,notes:String(s.notes||'').slice(0,1000),...(typeof s.googleEventId==='string'?{googleEventId:s.googleEventId.slice(0,256)}:{})};
+ });
+ const timeOK=v=>typeof v==='string'&&/^([01]\\d|2[0-3]):[0-5]\\d$/.test(v);
+ if(!timeOK(raw.nightStart||'22:00')||!timeOK(raw.nightEnd||'05:00')) throw Error('Horário noturno inválido no backup.');
+ return {schemaVersion:2,hospitals,shifts,nightStart:raw.nightStart||'22:00',nightEnd:raw.nightEnd||'05:00'};
+}
+let db;
+try{const stored=localStorage.getItem(KEY);db=stored?normalizeDB(JSON.parse(stored)):defaultDB();}
+catch(e){db=defaultDB();console.error('Não foi possível validar os dados locais:',e);setTimeout(()=>alert('Os dados salvos neste navegador parecem inválidos. O aplicativo abriu com uma base vazia para evitar travamento. Não salve alterações antes de recuperar um backup.'),300);}
+function save(){try{db.schemaVersion=2;localStorage.setItem(KEY,JSON.stringify(db));render()}catch(e){alert('Não foi possível salvar os dados neste navegador. Exporte um backup e libere espaço no armazenamento.');console.error(e)}}
 function id(){return crypto.randomUUID?crypto.randomUUID():String(Date.now()+Math.random())}
 function mins(t){let [h,m]=t.split(':').map(Number);return h*60+m}
 function nightOverlap(a,b){
- let total=0, cursor=new Date(a); cursor.setSeconds(0,0);
- while(cursor<b){let next=new Date(cursor.getTime()+60000), hh=cursor.getHours()*60+cursor.getMinutes();
- let ns=mins(db.nightStart), ne=mins(db.nightEnd);
- let isNight=ns<ne?(hh>=ns&&hh<ne):(hh>=ns||hh<ne);
- if(isNight)total++;cursor=next;
- }return total;
+ const ns=mins(db.nightStart),ne=mins(db.nightEnd),duration=Math.max(0,(b-a)/60000);
+ if(ns===ne)return duration;
+ let total=0,day=new Date(a);day.setHours(0,0,0,0);day.setDate(day.getDate()-1);
+ const last=new Date(b);last.setHours(0,0,0,0);
+ while(day<=last){
+  const segmentStart=new Date(day),segmentEnd=new Date(day);
+  segmentStart.setMinutes(ns);
+  if(ns<ne){segmentEnd.setMinutes(ne);}
+  else{segmentEnd.setDate(segmentEnd.getDate()+1);segmentEnd.setMinutes(ne);}
+  const overlap=Math.max(0,Math.min(b,segmentEnd)-Math.max(a,segmentStart));
+  total+=overlap/60000;day.setDate(day.getDate()+1);
+ }
+ return Math.min(duration,total);
 }
 function calc(s){
  let a=new Date(s.start),b=new Date(s.end);if(!(b>a))return {hours:0,night:0,day:0,total:0};
@@ -185,7 +215,7 @@ window.editShift=sid=>{let s=db.shifts.find(x=>x.id===sid);document.getElementBy
 window.deleteShift=sid=>{if(confirm('Excluir este plantão?')){db.shifts=db.shifts.filter(s=>s.id!==sid);save()}};
 document.getElementById('filterMonth').onchange=render;
 document.getElementById('exportBtn').onclick=()=>{let blob=new Blob([JSON.stringify(db,null,2)],{type:'application/json'}),a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='backup-plantao-control.json';a.click();URL.revokeObjectURL(a.href)};
-document.getElementById('importFile').onchange=async e=>{let f=e.target.files[0];if(!f)return;try{let x=JSON.parse(await f.text());if(!Array.isArray(x.hospitals)||!Array.isArray(x.shifts))throw Error();if(confirm('Substituir os dados atuais pelo backup?')){db=x;save();alert('Backup importado.')}}catch{alert('Arquivo de backup inválido.')}e.target.value=''};
+document.getElementById('importFile').onchange=async e=>{let f=e.target.files[0];if(!f)return;try{if(f.size>5*1024*1024)throw Error('O backup excede o limite de 5 MB.');const x=normalizeDB(JSON.parse(await f.text()));if(!confirm('Substituir os dados atuais por '+x.hospitals.length+' hospital(is) e '+x.shifts.length+' plantão(ões) deste backup?'))return;db=x;save();alert('Backup validado e importado com sucesso.')}catch(err){alert(err.message==='Unexpected end of JSON input'?'Arquivo JSON incompleto.':err.message||'Arquivo de backup inválido.')}finally{e.target.value=''}};
 
 // PWA: cache local para abrir o aplicativo mesmo sem internet depois da primeira visita.
 if ('serviceWorker' in navigator) window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js').catch(()=>{}));
@@ -238,28 +268,31 @@ document.getElementById('importCalendar').onclick=async()=>{
  try{
   calStatus('Buscando eventos…');
   const baseParams={timeMin:new Date(from+'T00:00:00').toISOString(),timeMax:new Date(to+'T23:59:59').toISOString(),singleEvents:'true',orderBy:'startTime',maxResults:'2500'};
-  let pageToken='',added=0,skipped=0,pages=0;
+  let pageToken='',added=0,skipped=0,pages=0;const pending=[];
   do{
    const params=new URLSearchParams(baseParams);if(pageToken)params.set('pageToken',pageToken);
    const response=await fetch('https://www.googleapis.com/calendar/v3/calendars/primary/events?'+params,{headers:{Authorization:'Bearer '+googleAccessToken}});
    if(!response.ok){if(response.status===401){googleAccessToken=null;googleTokenClient=null;document.getElementById('importCalendar').disabled=true;}throw Error(response.status===401?'A autorização expirou. Conecte novamente sua conta Google.':'Google Calendar respondeu '+response.status+'. Tente novamente.')}
    const data=await response.json();pages++;
    for(const ev of (data.items||[])){
-    if(!ev.start?.dateTime||!ev.end?.dateTime){skipped++;continue}
-    if(db.shifts.some(s=>s.googleEventId===ev.id)){skipped++;continue}
+    if(!ev.id||!ev.start?.dateTime||!ev.end?.dateTime){skipped++;continue}
+    if(db.shifts.some(s=>s.googleEventId===ev.id)||pending.some(s=>s.googleEventId===ev.id)){skipped++;continue}
     const title=(ev.summary||'').trim().toLocaleLowerCase('pt-BR');
     if(!title){skipped++;continue}
     const hospital=db.hospitals.find(h=>{
      const name=String(h.name||'').trim().toLocaleLowerCase('pt-BR');
-     return name && (title===name || title.includes(name));
+     return name && title.includes(name);
     });
     if(!hospital){skipped++;continue}
-    db.shifts.push({id:id(),hospitalId:hospital.id,start:ev.start.dateTime.slice(0,16),end:ev.end.dateTime.slice(0,16),breakMins:0,status:'Pendente',notes:'Importado do Google Agenda: '+(ev.summary||''),googleEventId:ev.id});
+    const start=new Date(ev.start.dateTime),end=new Date(ev.end.dateTime);
+    if(!Number.isFinite(start.getTime())||!Number.isFinite(end.getTime())||end<=start){skipped++;continue}
+    const localValue=d=>{const pad=n=>String(n).padStart(2,'0');return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate())+'T'+pad(d.getHours())+':'+pad(d.getMinutes())};
+    pending.push({id:id(),hospitalId:hospital.id,start:localValue(start),end:localValue(end),breakMins:0,status:'Pendente',notes:'Importado do Google Agenda: '+String(ev.summary||'').slice(0,900),googleEventId:ev.id});
     added++;
    }
    pageToken=data.nextPageToken||'';
   }while(pageToken && pages<100);
-  save();calStatus(`${added} evento(s) importado(s); ${skipped} ignorado(s). ${pages} página(s) consultada(s). ${pageToken?'Limite de 100 páginas atingido; repita a importação para continuar. ':''}Eventos sem horário ou sem nome de hospital correspondente não foram importados.`);
+  db.shifts.push(...pending);save();calStatus(`${added} evento(s) importado(s); ${skipped} ignorado(s). ${pages} página(s) consultada(s). ${pageToken?'Limite de 100 páginas atingido; repita a importação para continuar. ':''}Eventos sem horário ou sem nome de hospital correspondente não foram importados.`);
  }catch(e){calStatus(e.message)}
 };
 render();
