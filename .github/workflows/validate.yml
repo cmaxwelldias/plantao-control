@@ -10,7 +10,9 @@ permissions:
 
 jobs:
   validate:
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-latest
+    container:
+      image: mcr.microsoft.com/playwright:v1.56.1-noble
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -18,8 +20,6 @@ jobs:
           node-version: 22
       - name: Install browser test runner
         run: npm install --no-save playwright@1.56.1
-      - name: Install Chromium
-        run: npx playwright install chromium
       - name: Validate application scripts and security invariants
         run: node scripts/check-app.mjs
       - name: Run browser smoke tests
