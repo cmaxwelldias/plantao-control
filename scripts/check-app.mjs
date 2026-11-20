@@ -10,6 +10,7 @@ const schema = readFileSync(new URL('supabase/schema.sql', root), 'utf8');
 const cloud = readFileSync(new URL('cloud-sync.js', root), 'utf8');
 const config = readFileSync(new URL('supabase-config.js', root), 'utf8');
 const mobilePrep = readFileSync(new URL('scripts/prepare-mobile.mjs', root), 'utf8');
+const mobilePrep = readFileSync(new URL('scripts/prepare-mobile.mjs', root), 'utf8');
 
 new Script(app, { filename: 'app.js' });
 new Script(sw, { filename: 'sw.js' });
@@ -43,5 +44,8 @@ assert.doesNotMatch(schema, /to anon/i, 'Anonymous users must not receive table 
 assert.match(cloud, /auth\/v1\/token\?grant_type=refresh_token/, 'Cloud sessions must refresh through Supabase Auth');
 assert.match(cloud, /plantonices:data-changed/, 'Local edits must trigger cloud synchronization');
 assert.doesNotMatch(config, /service_role|sb_secret_/i, 'Privileged Supabase secrets must never be shipped to the browser');
+
+assert.ok(mobilePrep.includes("'supabase-config.js'"), 'Native bundles must include the Supabase public configuration');
+assert.ok(mobilePrep.includes("'cloud-sync.js'"), 'Native bundles must include the cloud synchronization module');
 
 console.log('Plantão Control checks passed: app and service-worker syntax plus security invariants verified.');
