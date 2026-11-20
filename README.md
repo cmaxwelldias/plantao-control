@@ -14,9 +14,9 @@
 - Importação de eventos do Google Agenda por OAuth, em modo somente leitura.
 - Política de segurança de conteúdo (CSP), JavaScript externo e cache offline atualizado.
 - Validação de backups e cópia de recuperação para dados locais inválidos.
-- Testes automatizados de sintaxe, segurança e fluxos principais no Chromium.
-- Política de segurança de conteúdo (CSP), scripts externos e cache offline atualizado.
-- Validação automatizada da sintaxe e de invariantes de segurança no GitHub Actions.
+- Ferramentas adicionais: calculadora de plantões, calculadora aritmética sem `eval`, bloco de notas, desenho em canvas, anexos de fotos/vídeos/áudios/documentos no IndexedDB, gravação de áudio, atalhos web, busca no YouTube e exportação CSV/ICS.
+- Cadastro de hospitais com fotos comprimidas, endereço, modalidades e atalhos para Google Maps, Waze e Apple Maps.
+- Testes de navegador com Playwright configurados no GitHub Actions.
 
 ## Limitações importantes
 1. Os dados de plantões e hospitais ficam no armazenamento local de cada navegador/dispositivo. Notas e anexos também permanecem locais; os anexos usam IndexedDB. Os lembretes locais são verificados enquanto o app está aberto; não são notificações push garantidas quando o navegador está fechado. Não existe sincronização automática dos registros do app entre computador e celular nesta versão. Use Exportar/Importar backup para transferir os dados.
@@ -26,7 +26,11 @@
 5. Para segurança, o token Google é mantido apenas na memória da sessão e deve ser autorizado novamente quando a página for reaberta. O botão Desconectar tenta revogar o token no Google; se não for possível, remova o acesso nas permissões da sua Conta Google.
 6. Os dados dos plantões continuam no armazenamento local do navegador. A validação do backup impede estruturas inválidas; se os dados locais estiverem corrompidos, o app tenta preservar uma cópia de recuperação antes de abrir uma base vazia.
 
-## Publicação e instalação\n\nO aplicativo está publicado em https://cmaxwelldias.github.io/plantao-control/. O nome de produto exibido foi atualizado para Plantonices. O site pode ser instalado como PWA nos navegadores compatíveis.\n\n## Publicação gratuita sugerida: GitHub Pages
+## Publicação e instalação
+
+O aplicativo está publicado em https://cmaxwelldias.github.io/plantao-control/. O nome de produto exibido foi atualizado para Plantonices. O site pode ser instalado como PWA nos navegadores compatíveis.
+
+## Publicação gratuita sugerida: GitHub Pages
 1. Crie uma conta gratuita em https://github.com/.
 2. Crie um repositório público chamado `plantao-control`.
 3. Envie todos os arquivos desta pasta para a raiz do repositório.
@@ -57,4 +61,13 @@ Os dados ficam no navegador. Exporte backup regularmente e mantenha uma cópia s
 ## Preparação para sincronização em nuvem
 
 O arquivo `supabase/schema.sql` documenta a estrutura mínima para armazenar um documento JSON por usuário autenticado, com RLS e políticas de propriedade por `auth.uid()`. Ele é apenas um blueprint: ainda não existe um projeto Supabase provisionado nem login/sincronização ativos neste repositório. Nunca coloque a chave `service_role` ou uma chave secreta no navegador; o frontend deverá usar somente uma chave publicável, sempre combinada com Auth e RLS. A tabela também precisa estar habilitada para a Data API nas configurações do projeto, conforme a política de exposição atual do Supabase.
-\n\n## Testes automatizados\n\nO repositório inclui Playwright e um workflow do GitHub Actions que executa testes Chromium para abertura do painel, cadastro de hospitais, cálculo noturno, calendário, validação de horários, backup, calculadoras, notas, anexos e exportações. A configuração dos testes não equivale a uma certificação de ausência total de erros: o resultado de cada execução deve ser conferido na aba Actions do GitHub.\n\n\n## Preparação para lojas Android e Apple\n\nO projeto agora inclui configuração Capacitor 8.6.2 e workflows para gerar um Android App Bundle de teste e um archive de simulador iOS. Execute o workflow **Build Android e iOS** em GitHub Actions para produzir os artefatos. O AAB gerado sem uma chave de assinatura não pode ser enviado diretamente à Google Play; a publicação exige assinatura de release e configuração da conta Play Console. O archive de simulador iOS não é um pacote App Store: a distribuição iOS exige build de dispositivo, assinatura Apple Developer, provisioning profile e revisão da App Store.\n
+
+
+## Testes automatizados
+
+O repositório inclui Playwright e um workflow do GitHub Actions que executa testes Chromium para abertura do painel, cadastro de hospitais, cálculo noturno, calendário, validação de horários, backup, calculadoras, notas, anexos e exportações. A configuração dos testes não equivale a uma certificação de ausência total de erros: o resultado de cada execução deve ser conferido na aba Actions do GitHub.
+
+
+## Preparação para lojas Android e Apple
+
+O projeto agora inclui configuração Capacitor 8.6.2 e workflows para gerar um Android App Bundle de teste e um archive de simulador iOS. Execute o workflow **Build Android e iOS** em GitHub Actions para produzir os artefatos. O AAB gerado sem uma chave de assinatura não pode ser enviado diretamente à Google Play; a publicação exige assinatura de release e configuração da conta Play Console. O archive de simulador iOS não é um pacote App Store: a distribuição iOS exige build de dispositivo, assinatura Apple Developer, provisioning profile e revisão da App Store.
