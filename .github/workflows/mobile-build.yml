@@ -24,6 +24,8 @@ jobs:
           java-version: '21'
       - uses: android-actions/setup-android@v3
       - run: npm install
+      - name: Validate application and native bundle inputs
+        run: node scripts/check-app.mjs
       - run: npm run mobile:prepare
       - run: npx cap add android
       - run: npx cap sync android
