@@ -5,7 +5,7 @@ test.beforeEach(async ({ page }) => {
 });
 
 test('abre o painel e apresenta os hospitais iniciais', async ({ page }) => {
-  await expect(page.getByRole('heading', { name: 'Plantão Control' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Plantonices' })).toBeVisible();
   await expect(page.locator('#hospitalTable')).toContainText('HSL');
   await expect(page.locator('#hospitalTable')).toContainText("D'or");
   await expect(page.locator('#mQtd')).toHaveText('0');
